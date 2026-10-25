@@ -65,6 +65,9 @@ html,body{height:100%;margin:0;overflow:hidden;background:var(--ink);color:var(-
 .diff input{margin-right:6px}
 .diff label:has(input:checked){background:var(--paper-ink);color:var(--paper)}
 .diff small{display:block;opacity:.8;margin-top:3px}
+.rifles label{flex:1 1 230px}
+#rRifle{width:100%;background:var(--ink);color:var(--paper);border:1px solid var(--line);font:inherit;font-size:12px;padding:3px}
+.rifletab{border-collapse:collapse;font-size:12px;width:100%}.rifletab th,.rifletab td{border-bottom:1px solid rgba(0,0,0,.2);padding:3px 5px;text-align:left;vertical-align:top}
 .ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:4px 18px;font-size:13px}
 .ctl .k{color:var(--paper-ink);border-color:rgba(29,28,21,.4)}
 .crit{display:grid;grid-template-columns:auto 1fr auto;gap:5px 10px;align-items:baseline;margin:10px 0}
@@ -157,9 +160,9 @@ body.touch .tut{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
     <div id="log"></div>
   </div>
   <div class="slip tr" id="rifleSlip">
-    <h3>Mosin 91/30 · PU</h3>
-    <div class="row"><div><div class="lab">Elevation drum</div><div class="big" id="drumTxt">3</div></div><div style="text-align:right"><div class="lab">Set for</div><div id="drumM" style="font-weight:700">300 m</div><div class="hide-sm"><span class="k">W</span>/<span class="k">S</span> · wheel</div></div></div>
-    <div class="row" style="margin-top:8px"><div><div class="lab">Windage</div><div class="big" id="windageTxt">0.0</div></div><div style="text-align:right"><div class="lab">mils</div><div id="windageDir" style="font-weight:700">centre</div><div class="hide-sm"><span class="k">A</span>/<span class="k">D</span></div></div></div>
+    <h3 id="rifleName">Mosin 91/30 · PU 3.5×</h3>
+    <div class="row"><div><div class="lab" id="drumLab">Elevation drum</div><div class="big" id="drumTxt">3</div></div><div style="text-align:right"><div class="lab">Set for</div><div id="drumM" style="font-weight:700">300 m</div><div class="hide-sm"><span class="k">W</span>/<span class="k">S</span> · wheel</div></div></div>
+    <div class="row" style="margin-top:8px"><div><div class="lab">Windage</div><div class="big" id="windageTxt">0.0</div></div><div style="text-align:right"><div class="lab" id="windUnit">mils</div><div id="windageDir" style="font-weight:700">centre</div><div class="hide-sm"><span class="k">A</span>/<span class="k">D</span></div></div></div>
     <div class="lab" style="margin-top:8px">Magazine</div>
     <div class="rounds" id="roundsTxt">●●●●●</div>
     <div id="boltTxt" style="font-size:12px">Ready</div>
@@ -178,7 +181,9 @@ body.touch .tut{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
   <h3>Shooting range</h3>
   <div class="rgrid"><canvas id="rangeFace" width="120" height="170" aria-label="Target face with your last shots"></canvas>
   <div><table class="rtab"><thead><tr><th>Target</th><th>Hits</th></tr></thead><tbody id="rangeTable"></tbody></table></div></div>
-  <div class="lab" style="margin-top:8px">Wind</div>
+  <div class="lab" style="margin-top:8px">Rifle</div>
+  <select id="rRifle" aria-label="Rifle"></select>
+  <div class="lab" style="margin-top:6px">Wind</div>
   <div class="vtabs"><span id="rw_calm" role="button" tabindex="0">Calm</span><span id="rw_steady" role="button" tabindex="0">Steady</span><span id="rw_gusty" role="button" tabindex="0">Gusty</span></div>
   <div class="row" style="gap:6px;flex-wrap:wrap"><button class="btn mini" id="rHelp">Firing solution: shown</button><button class="btn mini" id="rExit">Leave range</button></div>
   <div class="note">Green dot = hit on the silhouette, red = miss. Gold ring = centre mass.</div>
@@ -203,7 +208,7 @@ body.touch .tut{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
 <div class="modal" id="brief">
   <div class="sheet">
     <div class="stamp">Секретно</div>
-    <div class="meta">62nd Army · Sniper detachment · Order No. 17 · Build 1.2</div>
+    <div class="meta">62nd Army · Sniper detachment · Order No. 17 · Build 1.3</div>
     <h1>Stalingrad Sniper</h1>
     <div class="meta">Red October factory district · 12 November 1942 · 07:40</div>
     <h2>Situation</h2>
@@ -216,6 +221,9 @@ body.touch .tut{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
       <label><input type="radio" name="diff" value="marksman">Marksman<small>Ask Orlov (E) for estimates. They can be off by a few percent.</small></label>
       <label><input type="radio" name="diff" value="veteran">Veteran<small>No help. Range with the mil scale, read the flag and smoke yourself.</small></label>
     </div>
+    <h2>Rifle</h2>
+    <p style="margin:0 0 4px">Each rifle uses its real scope, reticle, adjustments and service ammunition. The tutorial always issues the Mosin with the PU.</p>
+    <div class="diff rifles" id="rifleList"></div>
     <h2>Controls</h2>
     <div class="ctl">
       <div><b>Stalk</b>: <span class="k">WASD</span> move, <span class="k">Shift</span> run, <span class="k">C</span> crouch, <span class="k">Z</span> crawl, click ground to move, <span class="k">M</span> map, <span class="k">Space</span> assess hide</div>
@@ -253,8 +261,9 @@ body.touch .tut{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
     <p><b>Range (m) = target height (m) × 1000 ÷ height in mils.</b> Use the binocular mil scale. A standing man is about 1.75 m, so a man 4 mils tall is about 440 m away.</p>
     <h2>Wind</h2>
     <p>Angle of the flag from its pole ÷ 4 ≈ wind speed in mph. Smoke leans the same way. Wind from 3 or 9 o’clock has full value, from 1–2, 4–5, 7–8 and 10–11 about half, and from 12 or 6 none. A 10 mph full-value wind pushes a 7.62 mm round about 0.5 m at 450 m. Dial windage into the wind.</p>
-    <h2>The rifle</h2>
-    <p>The PU scope magnifies 3.5× with a 4.5° field of view. Its elevation drum is marked 1 to 13 in hundreds of metres. Set it to the nearest hundred and hold a little high or low for the rest. A moving man needs lead: the round takes about 0.7 s to reach 450 m.</p>
+    <h2>Rifles and scopes</h2>
+    <p>Set the drum to the nearest mark and hold a little high or low for the rest. A moving man needs lead: the round takes about 0.7 s to reach 450 m. Soviet scopes adjust in thousandths (mils), British and American ones in minutes of angle (1 MOA ≈ 0.29 mil ≈ 2.9 cm at 100 m).</p>
+    <div style="overflow-x:auto"><table class="rifletab" id="rifleTable"></table></div>
     <h2>Shooting</h2>
     <ol>
       <li><b>Breathe.</b> Fire in the pause at the bottom of a breath (hold Shift). Hold too long and the reticle shakes.</li>
@@ -267,6 +276,10 @@ body.touch .tut{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
       <li><a href="https://www.globalsecurity.org/military/library/policy/army/fm/23-10/" target="_blank" rel="noopener">US Army FM 23-10, Sniper Training</a> (fieldcraft, wind and range methods)</li>
       <li><a href="https://www.americanrifleman.org/articles/2018/2/28/the-genesis-of-sniping-part-6-soviet-sniping-1939-1945/" target="_blank" rel="noopener">American Rifleman: Soviet Sniping, 1939–1945</a></li>
       <li><a href="https://en.wikipedia.org/wiki/PU_scope" target="_blank" rel="noopener">PU scope</a> (3.5×, 4.5° field, 1–13 drum)</li>
+      <li><a href="https://en.wikipedia.org/wiki/PE_scope" target="_blank" rel="noopener">PE scope</a> (3.87×, 5.5° field)</li>
+      <li><a href="https://en.wikipedia.org/wiki/SVT-40" target="_blank" rel="noopener">SVT-40</a> (830–840 m/s, 10 rounds, sniper version and its problems)</li>
+      <li><a href="https://www.k98kforum.com/threads/technical-question-regarding-zf39-42-scopes.56646/" target="_blank" rel="noopener">K98k forum: ZF39 range drum and moving post</a></li>
+      <li><a href="https://www.ssusa.org/articles/2019/5/10/new-vintage-sniper-optics-using-the-m73g4-sniper-scope-for-competition" target="_blank" rel="noopener">SSUSA: the M73B1 (Weaver 330C) on the M1903A4</a></li>
     </ul>
     <div class="actions"><button class="btn" id="manualClose">Close notebook</button></div>
   </div>
@@ -313,8 +326,8 @@ const angDiff=(a,b)=>((a-b)%360+540)%360-180;
 const smooth01=t=>{t=clamp(t,0,1);return t*t*(3-2*t)};
 const V3=THREE.Vector3;
 
-// ---------- ballistics constants (7.62x54R, light ball) ----------
-const MV=820, KD=0.00083, G=9.81, SIGHT_H=0.07, MPH=0.44704;
+// ---------- ballistics constants (set per rifle by applyRifle) ----------
+let MV=865, KD=0.00098, SIGHT_H=0.07;const G=9.81, MPH=0.44704;
 const SUN_AZ=72, SUN_EL=13;
 
 // ======================= WORLD DATA =======================
@@ -726,7 +739,7 @@ function resetMission(){
   bullets.forEach(b=>scene.remove(b.line));bullets=[];fx.forEach(f=>{scene.remove(f.s)});fx=[];
   Object.assign(wind,{fixed:false,var:28,mvar:4,int:[18,34]});wind.baseFrom=rnd()<.5?R(55,125):R(235,305);wind.baseMph=R(4,12);wind.from=wind.tFrom=wind.baseFrom;wind.mph=wind.tMph=wind.baseMph;wind.next=R(15,30);
   arty={next:R(18,30),booms:0,nextBoom:0,maskT:0};
-  Object.assign(snipe,{hide:null,view:'binos',drum:3,windMil:0,rounds:5,reserve:20,boltT:0,reloadT:0,breath:1,holding:false,shakeT:0,recoil:0,exposure:0,compT:-1,log:[],glint:false,sniperWarned:false});
+  Object.assign(snipe,{hide:null,view:'binos',drum:RIF.el.def,windMil:0,rounds:RIF.cap,reserve:20,boltT:0,reloadT:0,breath:1,holding:false,shakeT:0,recoil:0,exposure:0,compT:-1,log:[],glint:false,sniperWarned:false});
   setTufts(null);setBushes(null);
   ['o1','o2','o3'].forEach(id=>$('#'+id).classList.remove('done'));
 }
@@ -734,8 +747,46 @@ function resetMission(){
 // ======================= BALLISTICS =======================
 function simHeight(theta,X){let x=0,y=-SIGHT_H,vx=MV*Math.cos(theta),vy=MV*Math.sin(theta);const dt=1/2000;
   while(x<X){const v=Math.hypot(vx,vy);vx-=KD*v*vx*dt;vy-=(KD*v*vy+G)*dt;const nx=x+vx*dt;if(nx>=X){return y+vy*dt*((X-x)/(nx-x))}x=nx;y+=vy*dt}return y}
-const zeroTheta=[0];
-for(let d=1;d<=13;d++){let lo=0,hi=0.06;for(let k=0;k<32;k++){const m=(lo+hi)/2;if(simHeight(m,d*100)<0)lo=m;else hi=m}zeroTheta[d]=(lo+hi)/2}
+function zeroAngle(r){let lo=-0.01,hi=0.06;for(let k=0;k<32;k++){const m=(lo+hi)/2;if(simHeight(m,r)<0)lo=m;else hi=m}return(lo+hi)/2}
+// ======================= RIFLES =======================
+// Muzzle velocity of each issue ball round, drag fitted to its retained velocity near 500 m,
+// group size (MOA), true field of view and the adjustments each scope really had.
+const MOA=0.2909,YD=0.9144;
+const RIFLES={
+  mosin:{name:'Mosin 91/30',scope:'PU',power:'3.5×',side:'Soviet',cal:'7.62×54R light ball, 9.6 g',mv:865,kd:.00098,sh:.07,cap:5,cycle:1.6,reload:3.2,auto:false,moa:1.3,fov:4.5,ret:'pu',
+    el:{kind:'m',min:1,max:13,step:100,def:3,lab:'Elevation drum'},wd:{unit:'mil',click:.5,max:8},load:'Loading stripper clip…',
+    blurb:'Standard Red Army sniper rifle from 1942. Small, tough PU scope: drum 1–13 in hundreds of metres, windage in thousandths (mils). Post with two side bars.'},
+  mosinPE:{name:'Mosin 91/30',scope:'PE',power:'4×',side:'Soviet',cal:'7.62×54R light ball, 9.6 g',mv:865,kd:.00098,sh:.06,cap:5,cycle:1.6,reload:3.2,auto:false,moa:1.2,fov:5.5,ret:'pe',
+    el:{kind:'m',min:1,max:14,step:100,def:3,lab:'Elevation drum'},wd:{unit:'mil',click:.5,max:8},load:'Loading stripper clip…',
+    blurb:'Pre-war scope (3.87×), made again in 1942–43. Wider 5.5° field and a brighter image than the PU, drum to 1,400 m. Post with a fine cross-line.'},
+  svt:{name:'SVT-40',scope:'PU',power:'3.5×',side:'Soviet',cal:'7.62×54R light ball, 9.6 g',mv:835,kd:.00098,sh:.075,cap:10,cycle:.35,reload:3,auto:true,moa:2.6,fov:4.5,ret:'pu',
+    el:{kind:'m',min:1,max:13,step:100,def:3,lab:'Elevation drum'},wd:{unit:'mil',click:.5,max:8},load:'Changing magazine…',
+    blurb:'Self-loader with a 10-round magazine for fast follow-up shots. Shorter barrel, and the action could shift in the stock, so groups are about twice as wide. Sniper version dropped in 1942.'},
+  k98:{name:'Kar98k',scope:'ZF39',power:'4×',side:'German, captured',cal:'7.92×57 s.S. heavy ball, 12.8 g',mv:760,kd:.00061,sh:.07,cap:5,cycle:1.5,reload:3.2,auto:false,moa:1.3,fov:7,ret:'zf',movingPost:true,
+    el:{kind:'m',min:1,max:8,step:100,def:3,lab:'Range drum'},wd:null,load:'Loading stripper clip…',
+    blurb:'Captured German rifle. The heavy boat-tail bullet keeps its speed and drifts less. The ZF39 drum (100–800 m) moves the post down instead of the image, and there is no windage turret: hold off into the wind.'},
+  enfield:{name:'No.4 Mk I (T)',scope:'No.32',power:'3×',side:'British',cal:'.303 Mk VII ball, 11.3 g',mv:744,kd:.00082,sh:.065,cap:10,cycle:1.1,reload:5,auto:false,moa:1.5,fov:8,ret:'no32',
+    el:{kind:'yd',min:2,max:20,step:50,def:6,lab:'Range drum'},wd:{unit:'moa',click:2,max:16},load:'Loading two chargers…',
+    blurb:'British sniper rifle with a fast, smooth bolt and 10 rounds. The No.32 range drum reads yards (100–1,000 in 50-yard clicks) and the deflection drum moves 2 minutes per click.'},
+  m1903:{name:'M1903A4',scope:'M73B1',power:'2.5×',side:'American',cal:'.30-06 M2 ball, 9.7 g',mv:853,kd:.00090,sh:.055,cap:5,cycle:1.5,reload:3,auto:false,moa:2.2,fov:8.2,ret:'cross',
+    el:{kind:'moa',min:0,max:40,step:1,def:4,zero:100*YD,lab:'Elevation'},wd:{unit:'moa',click:1,max:20},load:'Loading stripper clip…',
+    blurb:'US Springfield with a commercial Weaver 330 scope: low power, wide field, fine crosshair and 1-minute clicks from a 100-yard zero. No range drum, so you turn range into minutes yourself.'}
+};
+let RIF=RIFLES.mosin,rifleId='mosin',rifleChoice='mosin',ELT=[];const solCache=new Map();
+const gauss=()=>{let u=0;for(let i=0;i<6;i++)u+=Math.random();return(u-3)/0.7071};
+function elRange(i){const e=RIF.el;return e.kind==='m'?i*e.step:e.kind==='yd'?i*e.step*YD:0}
+function elTheta(i){return ELT[i]}
+function elBig(i){const e=RIF.el;return e.kind==='m'?String(i):e.kind==='yd'?String(i*e.step):(i>0?'+':'')+i}
+function elSub(i){const e=RIF.el;return e.kind==='m'?`${i*e.step} m`:e.kind==='yd'?`${i*e.step} yd · ${Math.round(i*e.step*YD)} m`:`${i} MOA over 100 yd zero`}
+function applyRifle(id){rifleId=id;RIF=RIFLES[id];MV=RIF.mv;KD=RIF.kd;SIGHT_H=RIF.sh;ELT=[];solCache.clear();const e=RIF.el;
+  if(e.kind==='moa'){const z=zeroAngle(e.zero);for(let i=e.min;i<=e.max;i++)ELT[i]=z+i*MOA/1000}
+  else for(let i=e.min;i<=e.max;i++)ELT[i]=zeroAngle(elRange(i));
+  Object.assign(snipe,{drum:e.def,windMil:0,rounds:RIF.cap,boltT:0,reloadT:0});
+  if(typeof refreshRifleUI==='function')refreshRifleUI()}
+function wStep(){return RIF.wd?(RIF.wd.unit==='mil'?RIF.wd.click:RIF.wd.click*MOA):0}
+function corrTxt(m){return RIF.wd&&RIF.wd.unit==='moa'?`${(Math.abs(m)/MOA).toFixed(1)} MOA`:`${Math.abs(m).toFixed(1)} mil`}
+function dialTxt(m){return RIF.wd.unit==='moa'?`${Math.round(Math.abs(m)/MOA)} MOA`:`${Math.abs(m).toFixed(1)} mil`}
+applyRifle('mosin');
 const tof=r=>(Math.exp(KD*r)-1)/(KD*MV);
 function windAir(){const s=wind.now*MPH,b=(wind.from+180)*DEG;return new V3(Math.sin(b)*s,0,-Math.cos(b)*s)}
 function crossWind(bear){const a=windAir();const rb=(bear+90)*DEG;return a.x*Math.sin(rb)-a.z*Math.cos(rb)}
@@ -926,7 +977,7 @@ function leaveHide(){
 }
 
 // ======================= SNIPER =======================
-function fovFor(view){const w=innerWidth,h=innerHeight;if(view==='scope')return 4.5*h/(Math.min(w,h)*0.92);if(view==='binos')return 8.5*h/(Math.min(w*0.62,h*0.86));return 50}
+function fovFor(view){const w=innerWidth,h=innerHeight;if(view==='scope')return RIF.fov*h/(Math.min(w,h)*0.92);if(view==='binos')return 8.5*h/(Math.min(w*0.62,h*0.86));return 50}
 function aimDelta(dx,dy){const f=fovFor(snipe.view)/50;snipe.yaw+=dx*0.09*f;snipe.pitch-=dy*0.0016*f;snipe.yaw=snipe.baseYaw+clamp(angDiff(snipe.yaw,snipe.baseYaw),-65,65);snipe.pitch=clamp(snipe.pitch,-0.25,0.3)}
 function swayNow(){const hb=clamp((player.heart-60)/80,0,1);let breathF=1;
   if(snipe.holding&&snipe.breath>0)breathF=0.12;if(snipe.shakeT>0)breathF=2.2;
@@ -938,7 +989,9 @@ function swayNow(){const hb=clamp((player.heart-60)/80,0,1);let breathF=1;
   return{x:sx/1000,y:(sy+beat)/1000}}
 function aimDir(){const s=swayNow();const yaw=(snipe.yaw*DEG)+s.x+snipe.recoilYaw,pit=snipe.pitch+s.y+snipe.recoil;return{yaw,pit,dir:new V3(Math.sin(yaw)*Math.cos(pit),Math.sin(pit),-Math.cos(yaw)*Math.cos(pit))}}
 function eyePos(){const h=snipe.hide;return new V3(h.x,hAt(h.x,h.z)+0.45,h.z)}
-function targetUnderAim(maxMil){const e=eyePos(),{dir}=aimDir();let best=null,bm=maxMil;
+// line of sight through the reticle tip (drops below the image centre on moving-post scopes)
+function sightDir(){const{yaw,dir}=aimDir();if(!(RIF.movingPost&&snipe.view==='scope'))return dir;const right=new V3(Math.cos(yaw),0,Math.sin(yaw)),up=new V3().crossVectors(right,dir).normalize();return dir.clone().addScaledVector(up,-Math.tan(elTheta(snipe.drum))).normalize()}
+function targetUnderAim(maxMil){const e=eyePos(),dir=sightDir();let best=null,bm=maxMil;
   if(gameType==='range'){for(const t of RT){const c=new V3(t.x,t.base+.85,t.z),v=c.clone().sub(e),d=v.length(),ang=Math.acos(clamp(v.dot(dir)/d,-1,1))*1000;if(ang<bm){bm=ang;best={u:{name:t.name,speed:t.moving?t.speed||0:0},d,rt:t}}}return best}
   for(const u of units){if(!u.alive||!u.visible)continue;const c=u.chest();const v=c.clone().sub(e);const d=v.length();const ang=Math.acos(clamp(v.dot(dir)/d,-1,1))*1000;if(ang<bm&&los(e,c.clone().add(new V3(0,.3,0)),true,2.5)){bm=ang;best={u,d}}}
   return best}
@@ -950,15 +1003,17 @@ function fire(){
   if(snipe.view!=='scope'){say('Use the scope to shoot (press 3).');return}
   if(snipe.boltT>0||snipe.reloadT>0)return;
   if(snipe.rounds<=0){say('Empty. Reloading.');return}
-  initAudio();sfx.shot();snipe.rounds--;stats.shots++;snipe.boltT=1.6;setTimeout(()=>{if(mode==='snipe')sfx.bolt()},10);
+  initAudio();sfx.shot();snipe.rounds--;stats.shots++;snipe.boltT=RIF.cycle;setTimeout(()=>{if(mode==='snipe'&&!RIF.auto)sfx.bolt()},10);
   const e=eyePos(),{yaw,pit,dir}=aimDir();
   const right=new V3(Math.cos(yaw),0,Math.sin(yaw)),up=new V3().crossVectors(right,dir).normalize();
-  const th=zeroTheta[snipe.drum];
-  const bore=dir.clone().add(up.clone().multiplyScalar(Math.tan(th))).add(right.clone().multiplyScalar(snipe.windMil/1000)).normalize();
+  const th=elTheta(snipe.drum),sig=RIF.moa*MOA/1000/3;
+  // ZF39-style scopes move the post, not the image: the bore follows the image centre and the shooter aims with the lowered post
+  const sight=RIF.movingPost?dir.clone().addScaledVector(up,-Math.tan(th)).normalize():dir.clone();
+  const bore=dir.clone().add(up.clone().multiplyScalar((RIF.movingPost?0:Math.tan(th))+gauss()*sig)).add(right.clone().multiplyScalar(snipe.windMil/1000+gauss()*sig)).normalize();
   const origin=e.clone().sub(up.clone().multiplyScalar(SIGHT_H));
   const intended=targetUnderAim(25);
   const geo=new THREE.BufferGeometry().setFromPoints([origin.clone(),origin.clone()]);const line=new THREE.Line(geo,new THREE.LineBasicMaterial({color:0xd8d2c0,transparent:true,opacity:.35}));scene.add(line);
-  bullets.push({origin:origin.clone(),prev:origin.clone(),p:origin.clone(),v:bore.multiplyScalar(MV),t:0,trail:[origin.clone()],dir:dir.clone(),right,up,intended,line});
+  bullets.push({origin:origin.clone(),prev:origin.clone(),p:origin.clone(),v:bore.multiplyScalar(MV*(1+gauss()*.004)),t:0,trail:[origin.clone()],dir:sight,right,up,intended,line});
   snipe.recoil=0.012;snipe.recoilYaw=R(-.004,.004);shake=0.15;
   {const fd=new V3(Math.sin(yaw),0,-Math.cos(yaw)),mp=e.clone().addScaledVector(fd,1.5);mp.y=hAt(mp.x,mp.z)+.2;const dusty={open:1,crater:.8,rubble:.7,grass:.45,bush:.3}[snipe.hide.cov];puff(mp,0x8a7a5a,2.4*dusty+.5,1.4,.4);glintAt(e.clone().addScaledVector(fd,1.25).add(new V3(0,-.08,0)),.8,0xffc070,.07)}
   // exposure from the shot
@@ -1008,7 +1063,7 @@ function impact(b,r){
     const fmt=v=>`${Math.round(Math.abs(v)*100)} cm`;
     const parts=[];if(Math.abs(vt)>0.08)parts.push(fmt(vt)+(vt>0?' high':' low'));if(Math.abs(hz)>0.08)parts.push(fmt(hz)+(hz>0?' right':' left'));
     const mils=v=>(Math.abs(v)/dist*1000).toFixed(1);
-    let corr=[];if(Math.abs(vt)>0.08)corr.push(`${mils(vt)} mil ${vt>0?'lower':'higher'}`);if(Math.abs(hz)>0.08)corr.push(`${mils(hz)} mil ${hz>0?'left':'right'}`);
+    let corr=[];if(Math.abs(vt)>0.08)corr.push(`${corrTxt(vt/dist*1000)} ${vt>0?'lower':'higher'}`);if(Math.abs(hz)>0.08)corr.push(`${corrTxt(hz/dist*1000)} ${hz>0?'left':'right'}`);
     const short=r.p.clone().sub(e).dot(b.dir)<dist-3&&r.type!=='lost';
     say(`Miss on the ${it.u.name.toLowerCase()}. ${short?`Round struck ${r.type==='ground'?'the ground':r.type==='sand'?'the sandbags':'a wall'} short. `:''}${parts.join(', ')||'Just over him'}. Hold ${corr.join(' and ')||'the same'}.`);
   }else say(`Round landed about ${Math.round(r.p.distanceTo(e)/10)*10} m out.`);
@@ -1032,7 +1087,9 @@ function askSpotter(){if(mode!=='snipe')return;
   if(t){const rr=Math.round(t.d*(e?R(.93,1.07):1)/10)*10;s=`${t.u.name}, about ${rr} m. `+s}
   say(s)}
 function clockOf(from,facing){let rel=((from-facing)%360+360)%360;let c=Math.round(rel/30)%12;return c===0?12:c}
-function solutionFor(d,bear){const drum=clamp(Math.round(d/100),1,13);const hold=-simHeight(zeroTheta[drum],d);const cw=crossWind(bear);const drift=cw*(tof(d)-d/MV);const dial=-drift/d*1000;return{drum,hold,dial}}
+function solutionFor(d,bear){const key=Math.round(d*2);let c=solCache.get(key);
+  if(!c){let drum=RIF.el.min,best=1e9;for(let i=RIF.el.min;i<=RIF.el.max;i++){const hh=Math.abs(simHeight(ELT[i],d));if(hh<best){best=hh;drum=i}}c={drum,hold:-simHeight(ELT[drum],d)};if(solCache.size>400)solCache.clear();solCache.set(key,c)}
+  const{drum,hold}=c;const cw=crossWind(bear);const drift=cw*(tof(d)-d/MV);const dial=-drift/d*1000,st=wStep();return{drum,hold,dial,dialR:st?Math.round(dial/st)*st:dial}}
 function updateSnipe(dt){
   // keyboard aim
   const ks=keys,ka=dt*110;
@@ -1044,8 +1101,8 @@ function updateSnipe(dt){
   snipe.shakeT=Math.max(0,snipe.shakeT-dt);
   player.heart=Math.max(70,player.heart-dt*2.5);
   snipe.recoil*=Math.pow(0.02,dt);snipe.recoilYaw*=Math.pow(0.02,dt);snipe.shotFlash=Math.max(0,snipe.shotFlash-dt);
-  if(snipe.boltT>0){snipe.boltT-=dt;if(snipe.boltT<=0&&snipe.rounds===0&&snipe.reserve>0){snipe.reloadT=3.2;sfx.click()}}
-  if(snipe.reloadT>0){snipe.reloadT-=dt;if(snipe.reloadT<=0){const n=Math.min(5,snipe.reserve);snipe.rounds=n;snipe.reserve-=n;sfx.click()}}
+  if(snipe.boltT>0){snipe.boltT-=dt;if(snipe.boltT<=0&&snipe.rounds===0&&snipe.reserve>0){snipe.reloadT=RIF.reload;sfx.click()}}
+  if(snipe.reloadT>0){snipe.reloadT-=dt;if(snipe.reloadT<=0){const n=Math.min(RIF.cap,snipe.reserve);snipe.rounds=n;snipe.reserve-=n;sfx.click()}}
   // exposure sources
   const {yaw}=aimDir();snipe.glint=snipe.view==='scope'&&Math.abs(angDiff(yaw/DEG,SUN_AZ))<30;
   let dE=-1.1;if(snipe.glint)dE+=4;
@@ -1137,10 +1194,11 @@ function updateHud(){
   }else if(mode==='snipe'){
     if(T>toastT)p.hidden=true;
     ['vEye','vBin','vSco'].forEach((id,i)=>$('#'+id).classList.toggle('on',['eye','binos','scope'][i]===snipe.view));
-    $('#drumTxt').textContent=snipe.drum;$('#drumM').textContent=snipe.drum*100+' m';
-    $('#windageTxt').textContent=Math.abs(snipe.windMil).toFixed(1);$('#windageDir').textContent=snipe.windMil===0?'centre':snipe.windMil<0?'left':'right';
-    $('#roundsTxt').textContent='●'.repeat(snipe.rounds)+'○'.repeat(5-snipe.rounds)+`  +${snipe.reserve}`;
-    $('#boltTxt').textContent=snipe.reloadT>0?'Loading stripper clip…':snipe.boltT>0?'Working the bolt…':snipe.rounds===0?'Empty':'Ready';
+    $('#drumTxt').textContent=elBig(snipe.drum);$('#drumM').textContent=elSub(snipe.drum);
+    if(RIF.wd){$('#windageTxt').textContent=RIF.wd.unit==='moa'?String(Math.round(Math.abs(snipe.windMil)/MOA)):Math.abs(snipe.windMil).toFixed(1);$('#windageDir').textContent=Math.abs(snipe.windMil)<1e-6?'centre':snipe.windMil<0?'left':'right'}
+    else{$('#windageTxt').textContent='—';$('#windageDir').textContent='hold off'}
+    $('#roundsTxt').textContent='●'.repeat(snipe.rounds)+'○'.repeat(Math.max(0,RIF.cap-snipe.rounds))+`  +${snipe.reserve>500?'∞':snipe.reserve}`;
+    $('#boltTxt').textContent=snipe.reloadT>0?RIF.load:snipe.boltT>0?(RIF.auto?'Cycling…':'Working the bolt…'):snipe.rounds===0?'Empty':'Ready';
     setBar('#breathBar',snipe.breath,0,2);$('#breathBar').classList.toggle('hot',snipe.shakeT>0);$('#breathBar').classList.toggle('warn',snipe.breath<.3&&snipe.shakeT<=0);
     $('#pulseTxt').textContent=`Pulse ${Math.round(player.heart)}${snipe.holding?' · holding breath':snipe.shakeT>0?' · gasping':''}`;
     setBar('#expBar',snipe.exposure/100,.45,.75);
@@ -1152,7 +1210,7 @@ function updateHud(){
     if(showSol())$('#windTxt').innerHTML=`Wind from <b>${clock} o’clock</b> (${val}), <b>${wind.now.toFixed(0)} mph</b>`;
     else $('#windTxt').innerHTML=`Wind: flag angle ÷ 4 = mph. Smoke leans downwind.`;
     const t=targetUnderAim(snipe.view==='scope'?12:25);
-    if(t){let s=`<b>${t.u.name}</b>`;if(showSol()){const sol=solutionFor(t.d,snipe.yaw);s+=` · ${Math.round(t.d)} m<br>Solution: drum <b>${sol.drum}</b>${Math.abs(sol.hold)>.05?`, hold ${Math.round(Math.abs(sol.hold)*100)} cm ${sol.hold>0?'high':'low'}`:''}, windage <b>${Math.abs(Math.round(sol.dial*2)/2).toFixed(1)} ${sol.dial<0?'L':'R'}</b>${t.u.speed>0.5?`<br>Moving: lead ${(tof(t.d)*t.u.speed).toFixed(1)} m`:''}`}
+    if(t){let s=`<b>${t.u.name}</b>`;if(showSol()){const sol=solutionFor(t.d,snipe.yaw);s+=` · ${Math.round(t.d)} m<br>Solution: ${RIF.el.kind==='moa'?'elevation':'drum'} <b>${elBig(sol.drum)}</b>${Math.abs(sol.hold)>.05?`, hold ${Math.round(Math.abs(sol.hold)*100)} cm ${sol.hold>0?'high':'low'}`:''}, ${RIF.wd?`windage <b>${dialTxt(sol.dialR)} ${sol.dial<0?'L':'R'}</b>`:(Math.abs(sol.dial)<.05?'no hold-off for wind':`hold <b>${Math.abs(sol.dial).toFixed(1)} mil ${sol.dial<0?'left':'right'}</b> (${Math.round(Math.abs(sol.dial)*t.d/10)} cm)`)}${t.u.speed>0.5?`<br>Moving: lead ${(tof(t.d)*t.u.speed).toFixed(1)} m`:''}`}
       $('#tgtTxt').innerHTML=s}else $('#tgtTxt').innerHTML='Range = height (m) × 1000 ÷ mils';
   }
 }
@@ -1168,12 +1226,17 @@ function drawOverlay(){
     x.fillStyle='#050504';x.fillRect(0,0,w,h);x.globalCompositeOperation='destination-out';
     const g=x.createRadialGradient(cx,cy,r*0.9,cx,cy,r);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.beginPath();x.arc(cx,cy,r,0,7);x.fill();x.globalCompositeOperation='source-over';
     const vg=x.createRadialGradient(cx,cy,r*.55,cx,cy,r);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.beginPath();x.arc(cx,cy,r,0,7);x.fill();
-    // PU "German-style" reticle: tapered post + two side bars
-    x.fillStyle='rgba(8,8,6,.95)';const pw=Math.max(2.5,1.1*ppm),tip=2.2*ppm;
-    x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+pw,cy+tip);x.lineTo(cx+pw,cy+r);x.lineTo(cx-pw,cy+r);x.lineTo(cx-pw,cy+tip);x.closePath();x.fill();
-    const bt=Math.max(1.6,0.55*ppm),gap=3.2*ppm;x.fillRect(cx-r,cy-bt/2,r-gap,bt);x.fillRect(cx+gap,cy-bt/2,r-gap,bt);
+    // reticle of the fitted scope; on the ZF39 the post drops as the range drum turns
+    x.fillStyle=x.strokeStyle='rgba(8,8,6,.95)';const ty=RIF.movingPost?cy+Math.tan(elTheta(snipe.drum))*1000*ppm:cy;
+    const post=(pw,tip)=>{x.beginPath();x.moveTo(cx,ty);x.lineTo(cx+pw,ty+tip);x.lineTo(cx+pw,cy+r);x.lineTo(cx-pw,cy+r);x.lineTo(cx-pw,ty+tip);x.closePath();x.fill()};
+    const hline=lw=>{x.lineWidth=lw;x.beginPath();x.moveTo(cx-r,cy);x.lineTo(cx+r,cy);x.stroke()};
+    if(RIF.ret==='pu'){post(Math.max(2.5,1.1*ppm),2.2*ppm);const bt=Math.max(1.6,0.55*ppm),gap=3.2*ppm;x.fillRect(cx-r,cy-bt/2,r-gap,bt);x.fillRect(cx+gap,cy-bt/2,r-gap,bt)}
+    else if(RIF.ret==='pe'){post(Math.max(2.2,0.9*ppm),1.8*ppm);hline(Math.max(1,0.18*ppm))}
+    else if(RIF.ret==='zf'){post(Math.max(2.5,1.0*ppm),2.6*ppm);const bt=Math.max(3,1.6*ppm),gap=7*ppm;x.fillRect(cx-r,cy-bt/2,r-gap,bt);x.fillRect(cx+gap,cy-bt/2,r-gap,bt)}
+    else if(RIF.ret==='no32'){post(Math.max(1.8,0.6*ppm),1.4*ppm);hline(Math.max(1,0.15*ppm))}
+    else{x.lineWidth=Math.max(1,0.12*ppm);x.beginPath();x.moveTo(cx-r,cy);x.lineTo(cx+r,cy);x.moveTo(cx,cy-r);x.lineTo(cx,cy+r);x.stroke()}
     if(snipe.glint){x.fillStyle='rgba(255,240,200,.08)';x.beginPath();x.arc(cx,cy,r,0,7);x.fill()}
-    x.fillStyle='rgba(225,210,170,.75)';x.font=`${Math.max(11,r*0.035)}px Courier Prime, monospace`;x.textAlign='center';x.fillText(`PU 3.5×  ·  drum ${snipe.drum}  ·  ${snipe.windMil>0?'R':snipe.windMil<0?'L':''}${Math.abs(snipe.windMil).toFixed(1)}`,cx,cy+r*0.86);
+    x.fillStyle='rgba(225,210,170,.75)';x.font=`${Math.max(11,r*0.035)}px Courier Prime, monospace`;x.textAlign='center';x.fillText(`${RIF.scope} ${RIF.power}  ·  ${RIF.el.kind==='moa'?'elev':'drum'} ${elBig(snipe.drum)}  ·  ${RIF.wd?(snipe.windMil>1e-6?'R ':snipe.windMil<-1e-6?'L ':'')+dialTxt(snipe.windMil):'no windage turret'}`,cx,cy+r*0.86);
   }else{
     const rb=Math.min(w*0.31,h*0.43),cx=w/2,cy=h/2,o=rb*0.62;
     x.fillStyle='#050504';x.fillRect(0,0,w,h);x.globalCompositeOperation='destination-out';
@@ -1213,8 +1276,9 @@ addEventListener('keyup',e=>{keys[e.code]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
 function setView(v){snipe.view=v;sfx.click()}
 function cycleView(){setView(snipe.view==='eye'?'binos':snipe.view==='binos'?'scope':'eye')}
-function drum(d){snipe.drum=clamp(snipe.drum+d,1,13);sfx.click()}
-function windage(d){snipe.windMil=clamp(Math.round((snipe.windMil+d)*2)/2,-8,8);sfx.click()}
+function drum(d){snipe.drum=clamp(snipe.drum+d,RIF.el.min,RIF.el.max);sfx.click()}
+function windage(d){if(!RIF.wd){say(`The ${RIF.scope} has no windage turret. Hold the post off into the wind.`);return}
+  const st=wStep(),mx=Math.round(RIF.wd.max/RIF.wd.click);snipe.windMil=clamp(Math.round(snipe.windMil/st)+Math.sign(d),-mx,mx)*st;sfx.click()}
 let lockFailed=false;
 document.addEventListener('pointerlockerror',()=>{lockFailed=true});
 document.addEventListener('mousemove',e=>{if(mode==='snipe'&&document.pointerLockElement===canvas)aimDelta(e.movementX,e.movementY)});
@@ -1246,7 +1310,7 @@ document.querySelectorAll('#touch .btn').forEach(b=>{const t=b.dataset.t;
 if(matchMedia('(pointer:coarse)').matches)document.body.classList.add('touch');
 
 function fade(cb){const f=$('#fade');f.style.opacity=1;setTimeout(()=>{cb();f.style.opacity=0},380)}
-$('#startBtn').onclick=()=>{initAudio();gameType='mission';rangeGroup.visible=false;difficulty=document.querySelector('input[name=diff]:checked').value;show('#brief',false);resetMission();fade(()=>{mode='stalk';updateHudMode();toast('Our trench. The ridge is north; the German line lies beyond it.')})};
+$('#startBtn').onclick=()=>{initAudio();gameType='mission';rangeGroup.visible=false;difficulty=document.querySelector('input[name=diff]:checked').value;applyRifle(rifleChoice);show('#brief',false);resetMission();fade(()=>{mode='stalk';updateHudMode();toast('Our trench. The ridge is north; the German line lies beyond it.')})};
 $('#manualBtn').onclick=()=>show('#manual',true);$('#manualClose').onclick=()=>show('#manual',false);$('#endManual').onclick=()=>show('#manual',true);
 $('#occupyBtn').onclick=occupyHide;$('#leaveBtn').onclick=()=>show('#hideCard',false);
 $('#againBtn').onclick=()=>{show('#endCard',false);gameType='mission';resetMission();fade(()=>{mode='stalk';updateHudMode()})};
@@ -1301,7 +1365,7 @@ const D={
       <path d="M${fx} ${fy} L${fx+Math.sin(ang)*60} ${fy+Math.cos(ang)*60} L${fx+Math.sin(ang)*60+Math.cos(ang)*16} ${fy+Math.cos(ang)*60-Math.sin(ang)*16} L${fx+Math.cos(ang)*16} ${fy-Math.sin(ang)*16}Z" fill="var(--paper)" opacity=".85"/>
       <path d="M${fx} ${fy+34} A34 34 0 0 0 ${fx+Math.sin(ang)*34} ${fy+Math.cos(ang)*34}" stroke="var(--amber)" fill="none"/>
       ${TX(150,118,`flag ${Math.round(mph*4)}° ÷ 4 ≈ ${Math.round(mph)} mph`,'fill="var(--amber)"')}${TX(4,118,'gold = full value','font-size="9"')}`,124)},
-  drum:(drum,d)=>{const X=x=>20+x*.42,Y=h=>58-h*38;let p='';for(let x=0;x<=640;x+=20){const h=x===0?-SIGHT_H:simHeight(zeroTheta[drum],x);p+=(x?'L':'M')+X(x).toFixed(1)+' '+Y(h).toFixed(1)}
+  drum:(drum,d)=>{const X=x=>20+x*.42,Y=h=>58-h*38;let p='';for(let x=0;x<=640;x+=20){const h=x===0?-SIGHT_H:simHeight(elTheta(drum),x);p+=(x?'L':'M')+X(x).toFixed(1)+' '+Y(h).toFixed(1)}
     return SV(`<line x1="20" y1="58" x2="292" y2="58" stroke="var(--paper)" stroke-dasharray="4 3"/>${TX(196,52,'line of sight','font-size="9"')}
       <path d="${p}" fill="none" stroke="var(--amber)" stroke-width="2.4"/>
       <line x1="${X(drum*100)}" y1="44" x2="${X(drum*100)}" y2="72" stroke="var(--ok)" stroke-width="2"/>${TX(X(drum*100),84,`zero ${drum*100} m`,'text-anchor="middle" fill="var(--ok)" font-size="9"')}
@@ -1371,7 +1435,7 @@ function updateTut(dt){if(gameType!=='tutorial'){tutMarker.visible=false;tutTag.
   if(s.ok&&!tutBusy&&s.ok()){tutBusy=true;sfx.click();$('#tutState')&&($('#tutState').textContent='✔ Done');setTimeout(()=>{tutBusy=false;if(gameType==='tutorial'&&TUT[tut.i]===s)tutGo(tut.i+1)},900)}}
 function tutorialSpotted(u,d){units.forEach(x=>x.det=0);flashScreen(.3);toast(`${u.name} spotted you at ${Math.round(d)} m. In a real mission that ends it. Back to the checkpoint: crawl, use cover, wait for the cone to pass.`);
   if(mode==='stalk'){player.x=tut.check.x;player.z=tut.check.z;player.stance='prone'}}
-function startTutorial(){initAudio();gameType='tutorial';difficulty='recruit';show('#brief',false);resetMission();
+function startTutorial(){initAudio();applyRifle('mosin');gameType='tutorial';difficulty='recruit';show('#brief',false);resetMission();
   rangeGroup.visible=false;
   officer.ai.state='atOP';officer.ai.t=1e9;officer.x=OP.x;officer.z=OP.z;officer.visible=true;
   const sb=bearingOf(OP.x-TUT_HIDE.x,OP.z-TUT_HIDE.z);Object.assign(wind,{baseFrom:(sb+270)%360,baseMph:8,fixed:true});wind.from=wind.tFrom=wind.baseFrom;wind.mph=wind.tMph=8;
@@ -1410,7 +1474,7 @@ function rangeCheck(b){if(!b.intended||!b.intended.rt||b.crossed)return;const t=
   if(board){const disc=new THREE.Mesh(new THREE.CircleGeometry(.07,12),new THREE.MeshBasicMaterial({color:head||torso?0xffffff:0x111111}));disc.position.set(-u,v-.65,-.03);disc.rotation.y=Math.PI;t.board.add(disc);if(t.board.children.length>8)t.board.remove(t.board.children[0])}
   const d=t.dist,mil=x=>(Math.abs(x)/d*1000).toFixed(1),dv=v-.55;
   if(head)say(`${t.name}: head shot!`);else if(cm)say(`${t.name}: centre mass. Perfect.`);else if(torso)say(`${t.name}: hit, ${Math.round(Math.abs(dv)*100)} cm ${dv>0?'high':'low'}, ${Math.round(Math.abs(u)*100)} cm ${u>0?'right':'left'} of centre.`);
-  else say(`${t.name}: miss, ${Math.round(Math.abs(dv)*100)} cm ${dv>0?'high':'low'}, ${Math.round(Math.abs(u)*100)} cm ${u>0?'right':'left'}. Hold ${mil(dv)} mil ${dv>0?'lower':'higher'}, ${mil(u)} mil ${u>0?'left':'right'}.`);
+  else say(`${t.name}: miss, ${Math.round(Math.abs(dv)*100)} cm ${dv>0?'high':'low'}, ${Math.round(Math.abs(u)*100)} cm ${u>0?'right':'left'}. Hold ${corrTxt(dv/d*1000)} ${dv>0?'lower':'higher'}, ${corrTxt(u/d*1000)} ${u>0?'left':'right'}.`);
   renderRange()}
 function renderRange(){const el=$('#rangeCard');if(el.hidden)return;
   const rows=RT.map(t=>`<tr${t===rangeLast?' class="cur"':''}><td>${t.moving?'250 m moving':t.dist+' m'}</td><td>${t.hits}/${t.shots}</td></tr>`).join('');
@@ -1427,17 +1491,17 @@ function setRangeWind(w){rangeWind=w;const cross=rnd()<.5?R(60,120):R(240,300);
   if(w==='steady')Object.assign(wind,{baseFrom:cross,baseMph:R(6,9),fixed:false,var:8,mvar:1.2,int:[14,26]});
   if(w==='gusty')Object.assign(wind,{baseFrom:cross,baseMph:R(9,13),fixed:false,var:40,mvar:6,int:[6,12]});
   wind.from=wind.tFrom=wind.baseFrom;wind.mph=wind.tMph=wind.baseMph;wind.next=T+R(...wind.int);renderRange()}
-function startRange(){initAudio();gameType='range';difficulty='recruit';show('#brief',false);show('#endCard',false);
+function startRange(){initAudio();applyRifle(rifleChoice);gameType='range';difficulty='recruit';show('#brief',false);show('#endCard',false);
   units.forEach(u=>u.remove());units=[];bullets.forEach(b=>scene.remove(b.line));bullets=[];
   RT.forEach(t=>{t.shots=t.hits=0;t.marks=[];while(t.board.children.length)t.board.remove(t.board.children[0])});rangeLast=null;
   rangeGroup.visible=true;gameOver=false;stats.shots=stats.hits=0;
   fade(()=>{mode='snipe';const h={x:RANGE_POS.x,z:RANGE_POS.z,cov:'grass',score:100,canFire:true};
-    Object.assign(snipe,{hide:h,q:1,exposure:0,compT:-1,view:'scope',drum:3,windMil:0,rounds:5,reserve:999,boltT:0,reloadT:0,breath:1,log:[],baseYaw:0,yaw:0});
+    Object.assign(snipe,{hide:h,q:1,exposure:0,compT:-1,view:'scope',drum:RIF.el.def,windMil:0,rounds:RIF.cap,reserve:999,boltT:0,reloadT:0,breath:1,log:[],baseYaw:0,yaw:0});
     aimAt(new V3(RT[2].x,RT[2].base+.85,RT[2].z));snipe.baseYaw=snipe.yaw;
     setTufts({x:h.x,z:h.z,b:0});setBushes({x:h.x,z:h.z});playerMesh.visible=spotterMesh.visible=false;player.x=h.x;player.z=h.z;player.heart=72;
     setRangeWind(rangeWind);updateHudMode();renderLog();say('Range is clear. Distance boards stand left of each target, wind flags on the right. The 250 m target moves.');renderRange()})}
 function updateRange(dt){for(const t of RT){if(!t.moving)continue;t.x=t.x0+18*Math.sin(T*1.5/18);t.g.position.x=t.x;t.speed=Math.abs(Math.cos(T*1.5/18))*1.5}}
-function toMenu(){if(document.pointerLockElement)document.exitPointerLock();gameType='mission';gameOver=false;wind.fixed=false;Object.assign(wind,{var:28,mvar:4,int:[18,34]});
+function toMenu(){if(document.pointerLockElement)document.exitPointerLock();applyRifle(rifleChoice);gameType='mission';gameOver=false;wind.fixed=false;Object.assign(wind,{var:28,mvar:4,int:[18,34]});
   rangeGroup.visible=false;tutMarker.visible=tutTag.visible=false;['#hideCard','#endCard','#manual'].forEach(s=>show(s,false));
   setTufts(null);setBushes(null);playerMesh.visible=spotterMesh.visible=true;spawnEnemies();
   fade(()=>{mode='brief';updateHudMode();show('#brief',true)})}
@@ -1446,6 +1510,18 @@ function toMenu(){if(document.pointerLockElement)document.exitPointerLock();game
   const dx=OP.x-TUT_HIDE.x,dz=OP.z-TUT_HIDE.z,L=Math.hypot(dx,dz);
   scene.children.forEach(m=>{if(!m.isMesh||m.geometry.type!=='CylinderGeometry')return;const rx=m.position.x-TUT_HIDE.x,rz=m.position.z-TUT_HIDE.z,al=(rx*dx+rz*dz)/L;
     if(al>4&&al<200&&Math.abs(rx*dz-rz*dx)/L<6)m.visible=false})}
+function refreshRifleUI(){$('#rifleName').textContent=`${RIF.name} · ${RIF.scope} ${RIF.power}`;$('#drumLab').textContent=RIF.el.lab;
+  $('#vSco').textContent=`3 · Scope ${RIF.power}`;$('#windUnit').textContent=RIF.wd?(RIF.wd.unit==='moa'?'MOA':'mils'):'no turret';const sel=$('#rRifle');if(sel)sel.value=rifleId}
+{const ids=Object.keys(RIFLES);
+  $('#rifleList').innerHTML=ids.map(id=>{const r=RIFLES[id];return`<label><input type="radio" name="rifle" value="${id}"${id===rifleChoice?' checked':''}>${r.name} · ${r.scope} ${r.power}<small>${r.side} · ${r.cal} · ${r.mv} m/s · ${r.cap} rounds<br>${r.blurb}</small></label>`}).join('');
+  document.querySelectorAll('input[name=rifle]').forEach(i=>i.onchange=()=>{rifleChoice=i.value});
+  $('#rRifle').innerHTML=ids.map(id=>`<option value="${id}">${RIFLES[id].name} · ${RIFLES[id].scope} ${RIFLES[id].power}</option>`).join('');
+  $('#rRifle').onchange=e=>{rifleChoice=e.target.value;const r=document.querySelector(`input[name=rifle][value=${rifleChoice}]`);if(r)r.checked=true;applyRifle(rifleChoice);
+    say(`${RIF.name} with the ${RIF.scope} ${RIF.power}. ${RIF.blurb}`);e.target.blur()};
+  const adj=r=>r.el.kind==='moa'?'1 MOA clicks from 100 yd zero':r.el.kind==='yd'?`${r.el.min*r.el.step}–${r.el.max*r.el.step} yd drum`:`${r.el.min*r.el.step}–${r.el.max*r.el.step} m drum`;
+  $('#rifleTable').innerHTML='<tr><th>Rifle · scope</th><th>Round · muzzle velocity</th><th>Scope</th><th>Elevation · windage</th><th>Mag · group</th></tr>'+ids.map(id=>{const r=RIFLES[id];
+    return`<tr><td><b>${r.name}</b> · ${r.scope}</td><td>${r.cal} · ${r.mv} m/s</td><td>${r.power}, ${r.fov}° field</td><td>${adj(r)} · ${r.wd?(r.wd.unit==='moa'?`${r.wd.click} MOA clicks`:`${r.wd.click} mil clicks`):'hold off (no turret)'}</td><td>${r.cap} · ~${r.moa} MOA</td></tr>`}).join('');
+  refreshRifleUI()}
 buildRange();
 $('#tutBtn').onclick=startTutorial;$('#rangeBtn').onclick=startRange;$('#rExit').onclick=toMenu;$('#rHelp').onclick=()=>{rangeHelp=!rangeHelp;renderRange()};['calm','steady','gusty'].forEach(w=>{const b=$('#rw_'+w);b.onclick=()=>setRangeWind(w);b.onkeydown=e=>{if(e.key==='Enter'||e.key===' ')setRangeWind(w)}});
 // ======================= MAIN LOOP =======================
