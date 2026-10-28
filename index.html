@@ -211,7 +211,7 @@ body.touch .tut{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
 <div class="modal" id="brief">
   <div class="sheet">
     <div class="stamp">Секретно</div>
-    <div class="meta">62nd Army · Sniper detachment · Order No. 17 · Build 1.4</div>
+    <div class="meta">62nd Army · Sniper detachment · Order No. 17 · Build 1.5</div>
     <h1>Stalingrad Sniper</h1>
     <div class="meta">Red October factory district · 12 November 1942 · 07:40</div>
     <h2>Situation</h2>
@@ -1299,6 +1299,7 @@ function drawOverlay(){
     for(let m=0;m<=10;m++){const py=cy+m*ppm,L=m%5===0?8:4;x.beginPath();x.moveTo(cx-L,py);x.lineTo(cx+L,py);x.stroke();if(m%5===0&&m){x.textAlign='left';x.fillText(m,cx+11,py+4);x.textAlign='center'}}
     x.fillStyle='rgba(225,210,170,.75)';x.fillText('6×30 · scale in mils',cx,cy+rb*0.85);
   }
+  if(gameType==='tutorial')tutOverlay(x,w,h,ppm);
 }
 
 // ======================= INPUT =======================
@@ -1324,9 +1325,9 @@ addEventListener('keyup',e=>{keys[e.code]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
 function setView(v){snipe.view=v;sfx.click()}
 function cycleView(){setView(snipe.view==='eye'?'binos':snipe.view==='binos'?'scope':'eye')}
-function drum(d){snipe.drum=clamp(snipe.drum+d,RIF.el.min,RIF.el.max);sfx.click()}
+function drum(d){snipe.drum=clamp(snipe.drum+d,RIF.el.min,RIF.el.max);sfx.click();if(gameType==='tutorial')renderTut()}
 function windage(d){if(!RIF.wd){say(`The ${RIF.scope} has no windage turret. Hold the post off into the wind.`);return}
-  const st=wStep(),mx=Math.round(RIF.wd.max/RIF.wd.click);snipe.windMil=clamp(Math.round(snipe.windMil/st)+Math.sign(d),-mx,mx)*st;sfx.click()}
+  const st=wStep(),mx=Math.round(RIF.wd.max/RIF.wd.click);snipe.windMil=clamp(Math.round(snipe.windMil/st)+Math.sign(d),-mx,mx)*st;sfx.click();if(gameType==='tutorial')renderTut()}
 let lockFailed=false;
 document.addEventListener('pointerlockerror',()=>{lockFailed=true});
 document.addEventListener('mousemove',e=>{if(mode==='snipe'&&document.pointerLockElement===canvas)aimDelta(e.movementX,e.movementY)});
@@ -1376,6 +1377,34 @@ const tutMarker=new THREE.Group();
 const tagTex=(()=>{const cv=document.createElement('canvas');cv.width=cv.height=64;const x=cv.getContext('2d');x.fillStyle='#e0402e';x.strokeStyle='#1a0d08';x.lineWidth=4;x.beginPath();x.moveTo(8,10);x.lineTo(56,10);x.lineTo(32,54);x.closePath();x.fill();x.stroke();return new THREE.CanvasTexture(cv)})();
 const tutTag=new THREE.Sprite(new THREE.SpriteMaterial({map:tagTex,depthTest:false,transparent:true,fog:false}));tutTag.renderOrder=8;tutTag.visible=false;scene.add(tutTag);
 
+// ---- in-view aids: a magnified box around the officer with a mil bracket or the predicted impact ----
+function scr(p){const v=p.clone().project(camera);return{x:(v.x+1)/2*ov.width,y:(1-v.y)/2*ov.height,z:v.z}}
+function impactOffset(){const o=officerSol(),e=eyePos(),c=officer.chest();const v=simHeight(elTheta(snipe.drum),o.d);
+  const drift=crossWind(bearingOf(c.x-e.x,c.z-e.z))*(tof(o.d)-o.d/MV);return{v,hz:drift+snipe.windMil/1000*o.d,d:o.d}}
+const cmTxt=m=>`${Math.round(Math.abs(m)*100)} cm`;
+function tutOverlay(x,w,h,ppm){const s=TUT[tut.i];if(!officer.alive||snipe.view==='eye'||!s.aid)return;
+  const top=scr(new V3(officer.x,officer.eyeY()+.12,officer.z)),bot=scr(new V3(officer.x,officer.groundY()-officer.duckDepth(),officer.z));if(top.z>1||bot.z>1)return;
+  const hpx=bot.y-top.y,cxp=(top.x+bot.x)/2,cyp=(top.y+bot.y)/2;if(cxp<-50||cxp>w+50||cyp<-50||cyp>h+50)return;
+  const S=Math.min(250,h-430,w*.3);if(S<110)return;const Z=snipe.view==='scope'?3:5,src=S/Z,pr=renderer.getPixelRatio(),bx=16,by=340;
+  const amber='#e3a83b',I=(px,py)=>[bx+S/2+(px-cxp)*Z,by+S/2+(py-cyp)*Z];
+  x.save();x.strokeStyle=amber;x.lineWidth=1.5;x.strokeRect(cxp-src/2,cyp-src/2,src,src);
+  x.fillStyle='#000';x.fillRect(bx-3,by-3,S+6,S+26);try{x.drawImage(renderer.domElement,(cxp-src/2)*pr,(cyp-src/2)*pr,src*pr,src*pr,bx,by,S,S)}catch(e){}
+  x.strokeRect(bx,by,S,S);x.font='12px Courier Prime, monospace';x.textAlign='left';
+  if(s.aid==='mils'){const mils=hpx/ppm,[,ty]=I(0,top.y),[,fy]=I(0,bot.y),rx=bx+S/2+Math.max(16,hpx*Z*.3);
+    x.lineWidth=2;x.beginPath();x.moveTo(rx,ty);x.lineTo(rx,fy);x.moveTo(rx-6,ty);x.lineTo(rx+6,ty);x.moveTo(rx-6,fy);x.lineTo(rx+6,fy);
+    for(let m=1;m<mils;m++){const yy=fy-m*ppm*Z;x.moveTo(rx,yy);x.lineTo(rx+5,yy)}x.stroke();
+    x.fillStyle=amber;x.font='bold 14px Courier Prime, monospace';x.fillText(`${mils.toFixed(1)} mils`,rx+10,(ty+fy)/2+5);
+    x.font='12px Courier Prime, monospace';x.fillStyle='#e3d8b8';x.fillText(`×${Z} · one tick = 1 mil`,bx+6,by+S+16)}
+  else{const o=impactOffset(),c=officer.chest(),e=eyePos(),dir=c.clone().sub(e).normalize(),right=new V3(-dir.z,0,dir.x).normalize();
+    const pc=scr(c),pi=scr(c.clone().add(new V3(0,o.v,0)).addScaledVector(right,o.hz)),[ax,ay]=I(pc.x,pc.y),[ix,iy]=I(pi.x,pi.y);
+    const ok=Math.hypot(o.v,o.hz)<.12,col=ok?'#93b35c':'#e0402e';
+    x.setLineDash([4,3]);x.beginPath();x.moveTo(ax,ay);x.lineTo(ix,iy);x.stroke();x.setLineDash([]);
+    x.beginPath();x.arc(ax,ay,4,0,7);x.stroke();
+    x.strokeStyle=col;x.lineWidth=2.5;const cl=(v,a,b)=>Math.max(a,Math.min(b,v)),qx=cl(ix,bx+8,bx+S-8),qy=cl(iy,by+8,by+S-8);
+    x.beginPath();x.arc(qx,qy,7,0,7);x.moveTo(qx-11,qy);x.lineTo(qx+11,qy);x.moveTo(qx,qy-11);x.lineTo(qx,qy+11);x.stroke();
+    x.fillStyle=col;x.fillText(ok?'✓ the round lands on his chest':`round lands ${cmTxt(o.v)} ${o.v>0?'high':'low'}, ${cmTxt(o.hz)} ${o.hz>0?'right':'left'}`,bx+6,by+S+16)}
+  x.fillStyle=amber;x.fillText(s.aid==='mils'?'MAGNIFIED: OFFICER vs MIL SCALE':'IF THE POST IS ON HIS CHEST…',bx+6,by+16);x.restore()}
+
 // ---- diagrams (inline SVG, drawn from the game's own numbers) ----
 const SV=(b,h=120)=>`<svg viewBox="0 0 300 ${h}" role="img" aria-hidden="true" font-family="Courier Prime, monospace" font-size="10.5">${b}</svg>`;
 const TX=(x,y,t,o='')=>`<text x="${x}" y="${y}" fill="var(--paper)" ${o}>${t}</text>`;
@@ -1423,10 +1452,23 @@ const D={
     ${[30,60,90].map(y=>`<path d="M14 ${y} h40" stroke="var(--khaki)" stroke-width="2"/><path d="M54 ${y} l-7 -4 v8z" fill="var(--khaki)"/>`).join('')}${TX(10,110,'wind')}
     <path d="M150 96 Q152 40 194 16" fill="none" stroke="var(--red)" stroke-width="2" stroke-dasharray="4 3"/>${TX(200,22,'no windage: drifts','fill="var(--red)" font-size="9"')}
     <path d="M150 96 Q116 50 150 16" fill="none" stroke="var(--ok)" stroke-width="2.4"/>${TX(196,70,`dial ${Math.abs(dial).toFixed(1)} mil ${dial<0?'L':'R'}`,'fill="var(--ok)"')}${TX(196,84,'aim into the wind','fill="var(--ok)" font-size="9"')}`),
+  drumDial:(sel,tgt,d)=>{const cx=62,cy=62,r=44;let t='';for(let n=1;n<=13;n++){const a=(-210+n*(240/12)-20)*DEG,xx=cx+Math.cos(a)*r,yy=cy+Math.sin(a)*r,on=n===tgt;
+      t+=`<line x1="${cx+Math.cos(a)*(r-8)}" y1="${cy+Math.sin(a)*(r-8)}" x2="${cx+Math.cos(a)*(r-2)}" y2="${cy+Math.sin(a)*(r-2)}" stroke="${on?'var(--ok)':'var(--khaki)'}" stroke-width="${on?3:1.5}"/>`+TX(cx+Math.cos(a)*(r+9),cy+Math.sin(a)*(r+9)+3,n,`text-anchor="middle" font-size="9" ${on?'fill="var(--ok)" font-weight="700"':''}`)}
+    const pa=(-210+sel*(240/12)-20)*DEG;
+    return SV(`<circle cx="${cx}" cy="${cy}" r="${r-10}" fill="none" stroke="var(--line)"/>${t}<line x1="${cx}" y1="${cy}" x2="${cx+Math.cos(pa)*(r-12)}" y2="${cy+Math.sin(pa)*(r-12)}" stroke="var(--amber)" stroke-width="3"/><circle cx="${cx}" cy="${cy}" r="4" fill="var(--amber)"/>
+      ${TX(cx,cy+30,'drum ×100 m','text-anchor="middle" font-size="9"')}
+      ${TX(130,22,`1. Ranged: ${Math.round(d)} m`)}${TX(130,40,`2. Nearest 100: ${tgt*100} m`)}${TX(130,58,`3. Set drum ${tgt}`,'fill="var(--ok)" font-weight="700"')}
+      ${TX(130,80,`Now set: drum ${sel}`,sel===tgt?'fill="var(--ok)"':'fill="var(--amber)"')}${TX(130,96,sel===tgt?'✓ correct':sel<tgt?`→ press W ${tgt-sel}×`:`→ press S ${sel-tgt}×`,sel===tgt?'fill="var(--ok)"':'fill="var(--amber)"')}
+      ${TX(130,114,'(each click = 100 m)','font-size="9"')}`,120)},
+  windTable:(d)=>{const per=MPH*(tof(d)-d/MV),rows=[2,4,6,8,10,12].map(m=>{const dr=m*per;return[m,dr,dr/d*1000]});
+    return SV(`${TX(10,16,`At ${Math.round(d)} m (Mosin, light ball):`,'fill="var(--amber)"')}
+      ${TX(10,34,'wind mph','font-size="9"')}${TX(86,34,'drift','font-size="9"')}${TX(150,34,'full value','font-size="9"')}${TX(226,34,'half value','font-size="9"')}<line x1="8" y1="38" x2="292" y2="38" stroke="var(--line)"/>
+      ${rows.map(([m,dr,mil],i)=>{const y=52+i*13;return TX(24,y,m)+TX(86,y,`${Math.round(dr*100)} cm`)+TX(150,y,`${mil.toFixed(1)} mil`,'fill="var(--ok)"')+TX(226,y,`${(mil/2).toFixed(1)} mil`)}).join('')}
+      ${TX(10,138,'mils = drift (cm) ÷ range (m) × 10','font-size="9"')}${TX(10,150,'dial to the nearest 0.5-mil click, into the wind','font-size="9"')}`,156)},
   breath:()=>{let p='M10 60';for(let x=10;x<=200;x+=4){const y=60-Math.sin((x-10)/28)*26;p+=` L${x} ${Math.max(y,60-26).toFixed(1)}`}
     let q='M200 60';for(let x=200;x<=290;x+=3)q+=` L${x} ${(60+Math.sin(x*1.3)*(x-200)/9).toFixed(1)}`;
     return SV(`<path d="${p}" fill="none" stroke="var(--khaki)" stroke-width="2"/><path d="M160 34 H200" stroke="var(--ok)" stroke-width="4"/><path d="${q}" fill="none" stroke="var(--red)" stroke-width="2"/>
-      ${TX(10,100,'breathing moves the reticle up and down')}${TX(150,24,'hold Shift: still','fill="var(--ok)" font-size="9"')}${TX(212,96,'over 6 s:','fill="var(--red)" font-size="9"')}${TX(212,108,'you shake','fill="var(--red)" font-size="9"')}`)},
+      ${TX(10,100,'breathing moves the reticle')}${TX(150,24,'hold Shift: still','fill="var(--ok)" font-size="9"')}${TX(212,96,'over 6 s:','fill="var(--red)" font-size="9"')}${TX(212,108,'you shake','fill="var(--red)" font-size="9"')}`)},
   correction:()=>SV(`<rect x="110" y="6" width="80" height="106" fill="#c9b48a"/><circle cx="150" cy="24" r="10" fill="#2b2b26"/><path d="M128 112 V52 Q128 38 150 38 Q172 38 172 52 V112Z" fill="#2b2b26"/>
     <circle cx="150" cy="66" r="3" fill="var(--ok)"/><circle cx="128" cy="96" r="5" fill="var(--red)"/><path d="M131 92 L146 70" stroke="var(--amber)" stroke-width="2"/><path d="M146 70 l-1 8 l-6 -4z" fill="var(--amber)"/>
     ${TX(200,64,'Orlov: “low left”','fill="var(--red)"')}${TX(200,80,'→ hold higher','fill="var(--amber)"')}${TX(200,94,'  and right','fill="var(--amber)"')}${TX(8,64,'post tip on','font-size="9"')}${TX(8,76,'centre mass','font-size="9"')}`),
@@ -1443,12 +1485,15 @@ const TUT=[
   {t:'Enemy eyes',x:'Every enemy who can see you has a red cone on the ground. If you move inside one, his attention bar rises until he spots you. Press <span class="k">M</span> for the overview map to see all the cones, then <span class="k">M</span> again to come back.',svg:()=>D.cones(),ok:()=>tut.flags.m1&&tut.flags.m2},
   {t:'Choose a hide',x:'Crawl to the marker on the forward slope, just below the crest. Press <span class="k">Space</span> to assess it. Orlov grades the field of fire, concealment, range, landmarks, skyline, the way out and the sun. A good hide scores 70 or more. Press <span class="k">Enter</span> to occupy it.',svg:()=>D.hide(),mark:{x:TUT_HIDE.x,z:TUT_HIDE.z},ok:()=>mode==='snipe'},
   {t:'Observe first',x:'A sniper watches far longer than he shoots. Press <span class="k">2</span> for binoculars (6×). Move the mouse to find the officer under the red tag, at his observation post behind the enemy trench.',svg:null,tag:'officer',ok:()=>snipe.view==='binos'&&officer.alive&&milsTo(officer.chest())<18},
-  {t:'Range with mils',x:()=>`Put the officer next to the vertical scale in the binoculars and count his height in mils. Range = height × 1000 ÷ mils. How far is he?`,svg:()=>D.mils(officerSol().d),tag:'officer',quiz:()=>{const d=officerSol().d,c=Math.round(d/100)*100;return{opts:[c-100,c,c+100,c+200].sort((a,b)=>a-b).map(v=>({t:`About ${v} m`,ok:v===c,why:v===c?'':`1.75 × 1000 ÷ ${(1750/d).toFixed(1)} mils ≈ ${Math.round(d)} m. The nearest hundred is ${c} m.`}))}}},
+  {t:'Range with mils',aid:'mils',x:()=>`The binoculars have a scale in <b>mils</b> (1 mil = 1 m at 1,000 m). The magnified box on the left brackets the officer against that scale: he is about <b>${(1750/officerSol().d).toFixed(1)} mils</b> tall. A standing man is about 1.75 m. <b>Range = height (m) × 1000 ÷ mils.</b> How far is he?`,svg:()=>D.mils(officerSol().d),tag:'officer',quiz:()=>{const d=officerSol().d,c=Math.round(d/100)*100;return{opts:[c-100,c,c+100,c+200].sort((a,b)=>a-b).map(v=>({t:`About ${v} m`,ok:v===c,why:v===c?'':`1.75 × 1000 ÷ ${(1750/d).toFixed(1)} mils ≈ ${Math.round(d)} m. The nearest hundred is ${c} m.`}))}}},
   {t:'Find the wind',x:'Look at the white flag on the HQ roof (red tag). Smoke from the burning lorry also leans downwind.',svg:null,tag:'flag',ok:()=>snipe.view!=='eye'&&milsTo(flagPos())<22},
   {t:'Read the wind',x:()=>`Read where the wind comes from on the clock (12 = towards the target) and how strong it is. The flag stands about ${Math.round(wind.now*4)}° from the pole.`,svg:()=>D.wind(clockOf(wind.from,snipe.yaw),wind.now),tag:'flag',quiz:()=>{const c=clockOf(wind.from,snipe.yaw),m=Math.round(wind.now);const right=`From ${c} o’clock, full value, ~${m} mph`;const opts=[{t:right,ok:true},{t:`From ${c===9?3:9} o’clock, full value, ~${m} mph`,why:'The flag streams away from the wind. It blows from the side the flag points away from.'},{t:`From ${c} o’clock, half value, ~${Math.max(1,Math.round(m/2))} mph`,why:'3 and 9 o’clock are full value. Speed ≈ flag angle ÷ 4.'},{t:'From 12 o’clock, no value',why:'A headwind would make the flag point straight at you.'}];return{opts:opts.sort(()=>rnd()-.5)}}},
-  {t:'Set the elevation drum',x:()=>`The PU drum is marked in hundreds of metres. Your range is about ${Math.round(officerSol().d)} m, so set the drum to <b>${officerSol().drum}</b> with <span class="k">W</span>/<span class="k">S</span> or the mouse wheel. The round now crosses your line of sight at that distance.`,svg:()=>{const o=officerSol();return D.drum(o.drum,o.d)},ok:()=>snipe.drum===officerSol().drum},
-  {t:'Dial the windage',x:()=>{const o=officerSol(),v=Math.round(o.dial*2)/2;return`A ${Math.round(wind.now)} mph full-value wind moves the round about ${Math.abs(o.dial*o.d/1000*100).toFixed(0)} cm at this range. Dial <b>${Math.abs(v).toFixed(1)} mil ${v<0?'left':'right'}</b> (into the wind) with <span class="k">${v<0?'A':'D'}</span>.`},svg:()=>D.windage(Math.round(officerSol().dial*2)/2),ok:()=>{const v=Math.round(officerSol().dial*2)/2;return Math.abs(snipe.windMil-v)<=.5&&(v===0||Math.sign(snipe.windMil)===Math.sign(v))}},
-  {t:'Breathe and fire',x:'Press <span class="k">3</span> for the scope. Put the tip of the post on his chest. Hold <span class="k">Shift</span> to pause your breath, then click or press <span class="k">Space</span> to fire. Don’t hold your breath longer than 6 seconds.',svg:()=>D.breath(),enter:()=>{tut.startShots=stats.shots},ok:()=>stats.shots>tut.startShots},
+  {t:'Set the elevation drum',aid:'impact',x:()=>{const o=officerSol(),low=-simHeight(elTheta(3),o.d);return`A bullet falls as it flies, so the scope must look slightly down at the barrel. The <b>drum</b> sets the distance where the curved path meets your aim. PU drum numbers are hundreds of metres: 3 = 300 m, 4 = 400 m. You ranged <b>${Math.round(o.d)} m</b>, the nearest hundred is ${o.drum*100} m, so set <b>drum ${o.drum}</b> with <span class="k">W</span>/<span class="k">S</span>. In the magnified box, the red cross shows where the round would land with the post on his chest. On drum 3 it lands ${cmTxt(low)} ${low>0?'low':'high'}. Watch it climb onto his chest as you set the drum.`},svg:()=>{const o=officerSol();return D.drumDial(snipe.drum,o.drum,o.d)+D.drum(o.drum,o.d)},ok:()=>snipe.drum===officerSol().drum},
+  {t:'Wind in mils',aid:'impact',x:()=>{const o=officerSol(),d=o.d,per=MPH*(tof(d)-d/MV),ex=4*per;return`Wind pushes the round sideways, and the push grows quickly with range. Orlov’s table below converts wind into mils at this range. Use the <b>full value</b> column for wind from 3 or 9 o’clock and <b>half value</b> for 1–2, 4–5, 7–8 and 10–11 o’clock. <br><b>Worked example:</b> a 4 mph full-value wind drifts the round ${cmTxt(ex)}. ${Math.round(ex*100)} cm ÷ ${Math.round(d)} m × 10 = <b>${(ex/d*1000).toFixed(1)} mil</b>. <br>Today the flag shows <b>${Math.round(wind.now)} mph from ${clockOf(wind.from,snipe.yaw)} o’clock</b>. How many mils do you dial?`},svg:()=>D.windTable(officerSol().d),
+    quiz:()=>{const o=officerSol(),v=Math.abs(Math.round(o.dial*2)/2);const c=[...new Set([v,Math.max(0,v-.5),v+.5,Math.round(v)===v?v*2||1:v+1])].slice(0,4).sort((a,b)=>a-b);
+      return{opts:c.map(m=>({t:`${m.toFixed(1)} mil`,ok:m===v,why:m===v?'':`Read the full-value column at ${Math.round(wind.now)} mph: ${Math.abs(o.dial).toFixed(1)} mil, which rounds to the ${v.toFixed(1)}-mil click.`}))}}},
+  {t:'Dial the windage',aid:'impact',x:()=>{const o=officerSol(),v=Math.round(o.dial*2)/2,clk=clockOf(wind.from,snipe.yaw),cur=snipe.windMil;return`The wind comes from ${clk} o’clock, your ${v<0?'left':'right'}, and would carry the round ${cmTxt(o.dial*o.d/1000)} to the ${v<0?'right':'left'}. Turn the windage the other way, <b>into the wind</b>: dial <b>${Math.abs(v).toFixed(1)} mil ${v<0?'left':'right'}</b> with <span class="k">${v<0?'A':'D'}</span>. Each press is one 0.5-mil click, so that is <b>${Math.round(Math.abs(v)/.5)} press${Math.round(Math.abs(v)/.5)===1?'':'es'}</b>. Now set: ${Math.abs(cur).toFixed(1)} mil ${cur<0?'left':cur>0?'right':''}. Watch the cross in the magnified box slide onto his chest.`},svg:()=>D.windage(Math.round(officerSol().dial*2)/2),ok:()=>{const v=Math.round(officerSol().dial*2)/2;return Math.abs(snipe.windMil-v)<=.5&&(v===0||Math.sign(snipe.windMil)===Math.sign(v))}},
+  {t:'Breathe and fire',aid:'impact',x:'Press <span class="k">3</span> for the scope. Put the tip of the post on his chest. Hold <span class="k">Shift</span> to pause your breath, then click or press <span class="k">Space</span> to fire. Don’t hold your breath longer than 6 seconds.',svg:()=>D.breath(),enter:()=>{tut.startShots=stats.shots},ok:()=>stats.shots>tut.startShots},
   {t:'Correct and finish',x:'Orlov watched the shot and called where it went. If you missed, keep the same drum and windage and hold the post off by the correction he gave. Then fire again.',svg:()=>D.correction(),ok:()=>!officer.alive},
   {t:'Shoot and move',x:'Every shot raised your <b>Exposure</b> (top left). The muzzle dust, a scope pointed at the sun, or an enemy sniper raise it further. Firing while our guns fire masks the shot. At 100% the mortars arrive, so the rule is: shoot, then move. Press <span class="k">X</span> to leave the hide.',svg:()=>D.exposure(),ok:()=>mode==='stalk'},
   {t:'Training complete',x:'That is the whole drill: stalk unseen, choose a hide, observe, range, read the wind, set the rifle, breathe, fire, correct and displace. Practise your shooting on the range, or take on the real mission.',end:true},
@@ -1466,12 +1511,13 @@ function renderTut(){const s=TUT[tut.i],el=$('#tutCard');el.hidden=gameType!=='t
 function tutSkip(){const s=TUT[tut.i];
   // put the trainee where the next steps expect him
   if(tut.i<=5&&mode==='stalk'){const m=TUT.slice(tut.i+1).find(t=>t.mark)||{mark:TUT_HIDE};const target=s.mark||m.mark;if(s.mark){player.x=s.mark.x;player.z=s.mark.z}if(tut.i===2||tut.i===3)player.stance='prone';if(tut.i===5){player.x=TUT_HIDE.x;player.z=TUT_HIDE.z;player.stance='prone';openHideCard();occupyHide();setTimeout(()=>tutGo(6),500);return}}
-  if(tut.i===6){snipe.view='binos';aimAt(officer.chest())}
-  if(tut.i===8){aimAt(flagPos())}
-  if(tut.i===10)snipe.drum=officerSol().drum;
-  if(tut.i===11)snipe.windMil=Math.round(officerSol().dial*2)/2;
-  if(tut.i===12||tut.i===13){if(officer.alive)kill(officer,'body',officer.chest())}
-  if(tut.i===14&&mode==='snipe'){leaveHide()}
+  const t=s.t;
+  if(t==='Observe first'){snipe.view='binos';aimAt(officer.chest())}
+  if(t==='Find the wind'){aimAt(flagPos())}
+  if(t==='Set the elevation drum')snipe.drum=officerSol().drum;
+  if(t==='Dial the windage')snipe.windMil=Math.round(officerSol().dial*2)/2;
+  if(t==='Breathe and fire'||t==='Correct and finish'){if(officer.alive)kill(officer,'body',officer.chest())}
+  if(t==='Shoot and move'&&mode==='snipe'){leaveHide()}
   tutGo(tut.i+1)}
 function aimAt(p){const e=eyePos();snipe.yaw=bearingOf(p.x-e.x,p.z-e.z);snipe.pitch=Math.atan2(p.y-e.y,Math.hypot(p.x-e.x,p.z-e.z))}
 let tutBusy=false;
