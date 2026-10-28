@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Current build | 1.6 |
+| Current build | 1.7 |
 | Platform | Single HTML page (Three.js r128), desktop browser first, touch supported |
 | Owner | Petr |
 | Last updated | 2026-10-28 |
@@ -228,7 +228,8 @@ The tutorial uses a fixed wind of 8 mph from 9 o'clock (full value) on the shot 
 
 - **Short lane (north):** silhouette boards at 100–600 m with distance signs, a moving target at 250 m sweeping ±18 m, and wind flags every 100 m.
 - **Long lane (west along the ridge, past the map edge):** steel boards at 800, 1,000, 1,200, 1,500, 1,800, 2,000, 2,300 and 2,500 m. Boards are 1.5× size out to 1,200 m and 2× beyond. Flags stand every 250 m on a line 7° off the lane. Fog and the camera's draw distance widen on this lane.
-- **Controls:** a rifle selector, lane tabs, wind presets (calm, steady, gusty) and a toggle for the firing solution.
+- **Controls:** a rifle selector, lane tabs, wind presets (calm, steady, gusty), a toggle for the firing solution and a toggle for the range card.
+- **Range card (T key or button):** a table that shows how to set the selected rifle for every target on the current lane. The top explains how this rifle's elevation works (a drum read in metres or yards, or a turret dialled up from the zero in MOA or mils, with keys and click size) and how its windage works (a turret in mil or MOA clicks, or hold-off for scopes without one). Each row gives the distance, the elevation setting and the clicks or presses to get there, any hold-over left, the wind drift for 1 mph of full-value wind, and the windage for the wind blowing now (its clock value applied, in clicks, with the direction to dial into the wind). The moving target row adds the lead. The card updates live as the wind changes and when the rifle or lane changes.
 - **Scoring:** a head circle (r 13 cm), torso (50 × 70 cm) and centre-mass ring (r 12 cm). A hit table per target, a target face with the last 6 shots, and spotting discs on the boards.
 
 ## 10. Presentation and technology
@@ -257,6 +258,7 @@ The tutorial uses a fixed wind of 8 mph from 9 o'clock (full value) on the shot 
 | v1.4 | 2026-10-27 | Modern rifles (SVD, M24, M110, M2010, M107) and the long-range lane from 800 to 2,500 m |
 | v1.5 | 2026-10-28 | Clearer tutorial: magnified mil bracket, predicted-impact cross, drum dial, wind-to-mils table and a new "Wind in mils" step |
 | v1.6 | 2026-10-28 | New tutorial step "Full and half value" with a crosswind diagram and examples. Wind values corrected to the clock method (2/4/8/10 o'clock = 7/8 value, not half) in the HUD, field manual, wind diagram and wind table |
+| v1.7 | 2026-10-28 | Shooting range card: a toggleable (T) per-rifle table of elevation and windage settings for every target on the lane, with live wind |
 
 ## 13. Ideas backlog
 
