@@ -121,6 +121,15 @@ body.touch .tut{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
   body.touch #prompt{bottom:calc(225px + env(safe-area-inset-bottom,0px))}
   .stamp{display:none}
 }
+.camp{width:min(980px,100%)}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin:14px 0}
+.mcard{text-align:left;font:inherit;color:var(--paper-ink);background:rgba(255,255,255,.18);border:1.5px solid var(--paper-ink);padding:8px 10px;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0}
+.mcard:hover,.mcard:focus-visible{background:var(--paper-ink);color:var(--paper);outline:none}
+.mcard .n{font:800 22px/1 var(--f-display);letter-spacing:.06em}.mcard .t{font-weight:700}.mcard small{opacity:.8;font-size:11.5px;line-height:1.3}
+.mcard .won{color:#2f5d1e;font-weight:700;font-size:12px}.mcard:hover .won,.mcard:focus-visible .won{color:var(--ok)}
+.mcard.next{box-shadow:inset 0 0 0 2px var(--red)}
+.bmap{margin:10px 0;border:1.5px solid var(--paper-ink);background:#fff3}.bmap img{display:block;width:100%;height:auto;max-height:420px;object-fit:contain;background:#d9d0b4}
+.bmap figcaption{font-size:11.5px;padding:4px 6px;opacity:.85}
 @media (prefers-reduced-motion:reduce){#fade,.bar i{transition:none}}
 </style>
 
@@ -175,7 +184,7 @@ body.touch .tut{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
     <div id="pulseTxt" style="font-size:12px">Pulse 72</div>
   </div>
   <div id="snipeKeys" class="slip bl hide-sm" style="max-width:min(560px,60vw)">
-    <span class="k">Mouse</span> aim · <span class="k">Click</span>/<span class="k">Space</span> fire (scope) · <span class="k">Right-click</span> or <span class="k">1 2 3</span> view · <span class="k">E</span> ask spotter · <span class="k">X</span> leave hide · <span class="k">H</span> manual
+    <span class="k">Mouse</span> aim · <span class="k">Click</span>/<span class="k">Space</span> fire (scope) · <span class="k">Right-click</span> or <span class="k">1 2 3</span> view · <span class="k">E</span> ask spotter · <span class="k">G</span> helmet decoy · <span class="k">X</span> leave hide · <span class="k">H</span> manual
   </div>
 </div>
 
@@ -208,20 +217,29 @@ body.touch .tut{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
   <button class="btn" data-t="breath" id="tBr">Breath</button>
   <button class="btn" data-t="fire" id="tFire">FIRE</button>
   <button class="btn" data-t="ask" id="tAsk">Spotter</button>
+  <button class="btn" data-t="decoy" id="tDecoy">Decoy</button>
   <button class="btn" data-t="leave" id="tLeave">Leave</button>
 </div>
 
 <!-- BRIEFING -->
 <div class="modal" id="brief">
   <div class="sheet">
-    <div class="stamp">Секретно</div>
-    <div class="meta">62nd Army · Sniper detachment · Order No. 17 · Build 1.7</div>
-    <h1>Stalingrad Sniper</h1>
-    <div class="meta">Red October factory district · 12 November 1942 · 07:40</div>
+    <div class="stamp" id="bStamp">Секретно</div>
+    <div class="meta" id="bMeta">62nd Army · Sniper detachment · Order No. 17 · Build 1.8</div>
+    <h1 id="bTitle">Stalingrad Sniper</h1>
+    <div class="meta" id="bPlace">Red October factory district · 12 November 1942 · 07:40</div>
     <h2>Situation</h2>
-    <p>Every morning a German battalion officer walks from his headquarters to an observation post behind the forward trench. He directs the machine guns that have pinned our company for a week. Your orders: get into no-man’s-land unseen, choose a hide, kill him, and come back alive. Pvt. Orlov crawls with you as spotter.</p>
+    <p id="bStory">Every morning a German battalion officer walks from his headquarters to an observation post behind the forward trench. He directs the machine guns that have pinned our company for a week. Your orders: get into no-man’s-land unseen, choose a hide, kill him, and come back alive. Pvt. Orlov crawls with you as spotter.</p>
+    <p id="bObj" style="font-weight:700"></p>
+    <figure id="bMapFig" class="bmap" hidden><img id="bMap" alt=""><figcaption id="bMapCap"></figcaption></figure>
+    <h2>The legend</h2>
+    <p id="bLegend"></p>
+    <h2>Sources</h2>
+    <ul id="bSrc" style="font-size:13px"></ul>
+    <div id="bTrain">
     <h2>New to sniping?</h2>
     <p>Start with the <b>tutorial</b>: a guided version of the mission with diagrams and markers that teaches each skill in order. Then practise on the <b>shooting range</b>: a short lane from 100 to 600 m with a moving target, and a long lane from 800 to 2,500 m.</p>
+    </div>
     <h2>Difficulty</h2>
     <div class="diff">
       <label><input type="radio" name="diff" value="recruit" checked>Recruit<small>Orlov reads range and wind for you and calls the full firing solution.</small></label>
@@ -229,8 +247,11 @@ body.touch .tut{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
       <label><input type="radio" name="diff" value="veteran">Veteran<small>No help. Range with the mil scale, read the flag and smoke yourself.</small></label>
     </div>
     <h2>Rifle</h2>
+    <p id="bIssued" hidden></p>
+    <div id="bRifles">
     <p style="margin:0 0 4px">Each rifle uses its real scope, reticle, adjustments and service ammunition. Modern rifles are included for comparison and range practice. The tutorial always issues the Mosin with the PU.</p>
     <div class="diff rifles" id="rifleList"></div>
+    </div>
     <h2>Controls</h2>
     <div class="ctl">
       <div><b>Stalk</b>: <span class="k">WASD</span> move, <span class="k">Shift</span> run, <span class="k">C</span> crouch, <span class="k">Z</span> crawl, click ground to move, <span class="k">M</span> map, <span class="k">Space</span> assess hide</div>
@@ -238,6 +259,7 @@ body.touch .tut{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
     </div>
     <div class="actions">
       <button class="btn" id="startBtn">Begin the mission</button>
+      <button class="btn ghost" id="campBtn">Campaign</button>
       <button class="btn ghost" id="tutBtn">Training: tutorial</button>
       <button class="btn ghost" id="rangeBtn">Training: shooting range</button>
       <button class="btn ghost" id="manualBtn">Field manual</button>
@@ -245,6 +267,17 @@ body.touch .tut{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
   </div>
 </div>
 
+<!-- CAMPAIGN -->
+<div class="modal" id="camp" hidden>
+  <div class="sheet camp">
+    <div class="stamp" id="cStamp">Секретно</div>
+    <div class="meta">Sniper campaign · 1939–1945 · Build 1.8</div>
+    <h1>Stalingrad Sniper</h1>
+    <p>Eighteen missions from the legends of the Second World War’s snipers, from the Finnish snow at Kollaa to the hills of Manchuria. Each mission issues the hero’s rifle and has its own ground, season, enemy and objective. Play them in any order.</p>
+    <div class="cgrid" id="cGrid"></div>
+    <div class="actions"><button class="btn ghost" id="cTut">Training: tutorial</button><button class="btn ghost" id="cRange">Training: shooting range</button><button class="btn ghost" id="cManual">Field manual</button></div>
+  </div>
+</div>
 <!-- MANUAL -->
 <div class="modal" id="manual" hidden>
   <div class="sheet">
@@ -318,7 +351,7 @@ body.touch .tut{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
     <p id="endText"></p>
     <div class="stats" id="endStats"></div>
     <p id="endLesson" style="font-style:italic"></p>
-    <div class="actions"><button class="btn" id="againBtn">Try again</button><button class="btn ghost" id="endManual">Field manual</button></div>
+    <div class="actions"><button class="btn" id="againBtn">Try again</button><button class="btn" id="nextBtn" hidden>Next mission</button><button class="btn ghost" id="endCamp">Campaign</button><button class="btn ghost" id="endManual">Field manual</button></div>
   </div>
 </div>
 
@@ -336,17 +369,149 @@ const bearingOf=(dx,dz)=>((Math.atan2(dx,-dz)/DEG)+360)%360;
 const angDiff=(a,b)=>((a-b)%360+540)%360-180;
 const smooth01=t=>{t=clamp(t,0,1);return t*t*(3-2*t)};
 const V3=THREE.Vector3;
+// ======================= CAMPAIGN: 18 missions from real WW2 sniper stories =======================
+// One battlefield layout, rebuilt per mission from ?m=N: theme (season, terrain, buildings), sun, wind, enemy, objective, issued rifle.
+const W=(t,u)=>({t,u});
+const SRC={hayha:W('Simo Häyhä (Wikipedia)','https://en.wikipedia.org/wiki/Simo_H%C3%A4yh%C3%A4'),pav:W('Lyudmila Pavlichenko (Wikipedia)','https://en.wikipedia.org/wiki/Lyudmila_Pavlichenko'),
+  zai:W('Vasily Zaitsev (Wikipedia)','https://en.wikipedia.org/wiki/Vasily_Zaitsev_(sniper)'),gross:W('Vasily Grossman, A Writer at War: the Stalingrad snipers','https://erenow.org/ww/awriteratwar/18.php')};
+const MISSIONS=[
+ {title:'White Death',place:'Kollaa front, Ladoga Karelia, Finland',date:'21 December 1939',time:'11:30',side:'fin',enemy:'sov',unit:'Infantry Regiment 34 · 6th Company',
+  spotter:'Cpl. Korpela',rifle:'m28',theme:'snow',terrain:'forest',sun:[85,4.3],wind:[2,7],obj:{type:'officer'},officerName:'Soviet company officer',
+  story:'The Red Army’s 56th Rifle Division is pressing the Kollaa line. Every day a Soviet company officer walks from a log dugout to an observation post at the forest edge to direct the attack. It is −30 °C. Get into the frozen clearing unseen, kill him, and come back to our trench.',
+  history:"The Red Army called him “Belaya Smert”, the White Death. A small farmer from Rautjärvi, Simo Häyhä lay in the snow at −40 °C in white from head to foot, with no scope to glint, snow packed in front of his muzzle and snow in his mouth so his breath would not betray him. In 100 days he killed more than 500 Soviet soldiers, 25 of them on 21 December 1939 alone. The Soviets sent counter-snipers and artillery barrages after him; he outlived them all, until an explosive bullet tore his jaw away on 6 March 1940. He woke on 13 March, the day peace was signed.",
+  sources:[SRC.hayha,W('Tapio Saarelainen, The White Sniper (Casemate, 2016)','https://www.casematepublishers.com/')]},
+ {title:'First Blood at Biliaivka',place:'Biliaivka, west of Odessa',date:'8 August 1941',time:'07:00',side:'sov',enemy:'rom',unit:'25th “Chapaev” Rifle Division',
+  spotter:'Pvt. Bondarenko',rifle:'mosinPE',theme:'summer',terrain:'steppe',sun:[168,10.9],wind:[3,10],obj:{type:'count',n:2,names:['Observer'],label:'Kill the two Romanian observers on the hill'},officerName:'Romanian officer',
+  story:'Romanian troops are closing on Odessa. Two observers stand on the hill behind their line every morning, calling fire onto our trenches. You have a rifle at last. Kill both observers, about 400 m out, and get back.',
+  history:"“I am 25 years old and I have killed 309 fascist invaders by now,” Lyudmila Pavlichenko told a crowd in Chicago. The recruiting office in Odessa laughed at the history student and offered her a nurse’s apron; she was handed a rifle and told to prove herself on two Romanians at 400 m. She did, at Biliaivka on 8 August 1941, and became “Lady Death”, killing 187 at Odessa alone.",
+  sources:[SRC.pav,W('National WWII Museum: “Lady Death” of the Red Army','https://www.nationalww2museum.org/war/articles/lady-death-red-army-lyudmila-pavlichenko')]},
+ {title:'Neva Bank',place:'Nevskaya Dubrovka, Leningrad',date:'8 September 1941',time:'08:00',side:'sov',enemy:'ger',unit:'11th Separate Rifle Brigade · reconnaissance platoon',
+  spotter:'Pvt. Gusev',rifle:'mosinPE',theme:'green',terrain:'forest',sun:[211,13.3],wind:[3,9],obj:{type:'count',n:2,names:['Patrol leader','Patrol rifleman'],label:'Stop two of the advancing German riflemen'},officerName:'German company officer',
+  story:'German infantry are feeling their way toward the Neva. Patrols are probing our bank every morning. Get forward unseen, stop two of the advancing riflemen, and come back.',
+  history:"Vladimir Pchelintsev, the Leningrad sniper, shot two Germans advancing on the Neva on the first day the siege closed, 8 September 1941. By spring he had killed 456 fascists by his own count, became a Hero of the Soviet Union, and was sent to America with Pavlichenko to tell the world how Leningrad’s snipers were bleeding the besiegers.",
+  sources:[W('Vladimir Pchelintsev (Wikipedia)','https://en.wikipedia.org/wiki/Vladimir_Pchelintsev')]},
+ {title:'Mackenzie Heights',place:'Mekenzievy Gory, Sevastopol',date:'January 1942',time:'09:30',side:'sov',enemy:'ger',unit:'25th Rifle Division · Coastal Army',
+  spotter:'Jr. Lt. Kitsenko',rifle:'svt',theme:'autumn',terrain:'forest',sun:[102,9.9],wind:[4,12],obj:{type:'duel'},officerName:'German battalion officer',decoys:2,sniperWhere:'the scrub of the far slope',
+  duel:[{x:-70,z:-150},{x:95,z:-165},{x:-170,z:-190},{x:40,z:-120}],
+  story:'A German sniper on the far slope has been killing our runners for a week. He moves after every shot. Find him, use the helmet decoy (G) to make him fire, kill him and come back.',
+  history:"At Sevastopol the Germans learned to fear one rifle on the Mackenzie Heights. Pavlichenko hunted their snipers one by one, 36 of them, including duels that lasted days and nights, lying motionless until the enemy made the one mistake she needed. German loudspeakers offered her chocolate and an officer’s rank to come over. She answered with her rifle. Her husband and sniper partner Alexei Kitsenko died beside her under the mortars.",
+  sources:[SRC.pav,W('National Park Service: “Lady Death” and the First Lady','https://www.nps.gov/elro/blogs/lady-death-and-the-first-lady.htm')]},
+ {title:'Mamayev Kurgan',place:'Mamayev Kurgan, Stalingrad',date:'25 October 1942',time:'08:00',side:'sov',enemy:'ger',unit:'1047th Rifle Regiment · 284th Rifle Division',
+  spotter:'Nikolai Kulikov',rifle:'mosinPE',theme:'mud',terrain:'urban',sun:[214,11.6],wind:[4,12],obj:{type:'count',n:2,names:['Artillery observer','Signaller'],label:'Kill the artillery observer and his signaller'},officerName:'German battalion officer',
+  story:'A German artillery observer on the slope of the Kurgan is bringing down fire on every move we make. His signaller sits with the radio near the HQ. Kill both and come back.',
+  history:"“There is no land for us beyond the Volga!” Vasily Zaitsev, the Ural shepherd boy who learned to shoot wolves, killed 225 Germans in a month on Mamayev Kurgan and the Metiz works, 11 of them snipers. He trained the “zaichata”, the little hares, who killed over a thousand more. Front newspapers printed his tally every day, and the Germans put a price on his head.",
+  sources:[SRC.zai,SRC.gross]},
+ {title:'Water at Dawn',place:'Ninth January Square, Stalingrad',date:'October 1942',time:'06:40',side:'sov',enemy:'ger',unit:'13th Guards Rifle Division',
+  spotter:'Pvt. Ivanov',rifle:'mosin',theme:'mud',terrain:'urban',sun:[194,3.5],wind:[2,9],obj:{type:'count',n:3,names:['Water carrier'],label:'Kill three of the men running for water'},officerName:'German company officer',well:true,
+  story:'At first light the Germans run to the well behind their line for water, one at a time, side-on to you and fast. Lead them. Kill three and come back before the light is full.',
+  history:"Anatoly Chekhov, nineteen, took his rifle up to the top floors of the ruins on Ninth January Square, deep inside a room where no muzzle flash could be seen. At dawn the Germans had to run for water. Nine fell the first day, seventeen in two days, forty in a week. Vasily Grossman lay beside him and wrote it up for Krasnaya Zvezda, and the whole Red Army read about the boy who made the Germans die of thirst.",
+  sources:[SRC.gross,W('Pavlov’s House and its defenders (stalingrad.net)','https://stalingrad.net/russian-hq/pavlovs-house/defenders.htm')]},
+ {title:'Red October',place:'Red October factory district, Stalingrad',date:'12 November 1942',time:'07:40',side:'sov',enemy:'ger',unit:'62nd Army · Sniper detachment',
+  spotter:'Pvt. Orlov',rifle:null,theme:'mud',terrain:'base',sun:[72,13],wind:[4,12],obj:{type:'officer'},officerName:'Battalion officer',
+  story:'Every morning a German battalion officer walks from his headquarters to an observation post behind the forward trench. He directs the machine guns that have pinned our company for a week. Your orders: get into no-man’s-land unseen, choose a hide, kill him, and come back alive.',
+  history:"On 11 November 1942 the Germans threw everything at the Red October works and the 62nd Army held. The snipers in the factory ruins stopped every German who showed his head.",
+  sources:[SRC.zai,SRC.gross]},
+ {title:'The Duel',place:'Metiz works, Stalingrad',date:'November 1942',time:'14:00',side:'sov',enemy:'ger',unit:'1047th Rifle Regiment · 284th Rifle Division',
+  spotter:'Nikolai Kulikov',rifle:'mosinPE',theme:'frost',terrain:'urban',sun:[165,15.5],wind:[3,9],obj:{type:'duel'},officerName:'German battalion officer',decoys:2,sniperWhere:'no-man’s-land, between the wrecked tank and the pillbox',sheet:true,
+  duel:[{x:-30,z:-112},{x:-30,z:-112},{x:60,z:-130},{x:-110,z:-125}],
+  story:'Prisoners say Berlin has sent the head of its sniper school to kill our best shots. He has already killed two of ours from somewhere between the wrecked tank and the pillbox. In the afternoon the sun will shine into his lens. Make him fire at the helmet (G), find him, kill him.',
+  history:"Berlin was alarmed by Zaitsev and sent the head of the Zossen sniper school, SS Standartenführer Heinz Thorvald, “Major König”, to kill him. König killed two of Zaitsev’s best snipers. For days Zaitsev and Kulikov searched until they found him under a sheet of iron between a wrecked tank and a pillbox. In the afternoon the sun moved onto König’s lens. Kulikov raised his helmet; König fired; Kulikov screamed and fell; König raised his head to look, and Zaitsev shot him between the eyes. König’s scope is still displayed in the Armed Forces Museum in Moscow.",
+  sources:[W('Erwin König (Wikipedia)','https://en.wikipedia.org/wiki/Erwin_K%C3%B6nig'),W('National Interest: The Greatest Sniper Duel in History Is a Myth','https://nationalinterest.org/node/33161'),SRC.gross]},
+ {title:'Hill 27',place:'Near Mount Austen, Guadalcanal',date:'13 January 1943',time:'08:00',side:'usa',enemy:'jap',unit:'132nd Infantry · Americal Division',
+  spotter:'PFC Mazur',rifle:'m1903',theme:'jungle',terrain:'jungle',sun:[230,24.7],wind:[2,7],obj:{type:'count',n:3,names:['Tree sniper'],label:'Kill the three snipers tied into the palms'},officerName:'Japanese officer',treeSnipers:true,
+  story:'Japanese snipers tied into the tops of palm trees are pinning the battalion on its way to Hill 27. Look for the glint high in the crowns. Kill three of them and come back.',
+  history:"The Japanese tied themselves into the tops of coconut palms and shot from the crowns, and Guadalcanal became a sniper’s war. John George, a Pennsylvania target shooter, sent home for his own scoped rifle and took them on: he learned to read the crowns, watch for the shaking frond and fire first. He came home to write Shots Fired in Anger, the American sniper’s bible.",
+  sources:[W('Pacific Wrecks: review of Shots Fired in Anger','https://pacificwrecks.com/reviews/shots-fired-in-anger.html'),W('John Miller Jr., Guadalcanal: The First Offensive (US Army CMH, 1949)','https://history.army.mil/html/books/005/5-3/index.html')]},
+ {title:'Velizh Sector',place:'Velizh sector, Kalinin Front',date:'March 1943',time:'09:00',side:'sov',enemy:'ger',unit:'1122nd Rifle Regiment · 334th Rifle Division',
+  spotter:'Pvt. Sergeyev (trainee)',rifle:'mosin',theme:'snow',terrain:'forest',sun:[227,11.9],wind:[3,11],obj:{type:'count',n:3,names:['Gun crew','Tractor driver'],label:'Kill three of the gun crew and tractor drivers'},officerName:'German battalion officer',guns:true,
+  story:'A German battery has moved up behind their line with its tractors. Take your trainee, kill three of the gunners and drivers so the guns cannot move, and bring him back.',
+  history:"Ivan Sidorenko, the art student from Smolensk, became the Red Army’s deadliest sniper: about 500 Germans. He trained 250 snipers and once, with a student, stopped a German column by setting a tank and three tractors on fire with incendiary bullets. He was made Hero of the Soviet Union in June 1944.",
+  sources:[W('Ivan Sidorenko (Wikipedia)','https://en.wikipedia.org/wiki/Ivan_Sidorenko')]},
+ {title:'Captured Rifle',place:'Mius front, Donbas',date:'July 1943',time:'07:00',side:'ger',enemy:'sov',unit:'144th Gebirgsjäger Regiment · 3rd Mountain Division',
+  spotter:'Gefr. Huber',rifle:'mosin',theme:'summer',terrain:'steppe',sun:[351,19.3],wind:[3,10],obj:{type:'count',n:2,names:['MG gunner','MG loader'],label:'Silence the Soviet machine gun (gunner and loader)'},officerName:'Soviet battalion officer',
+  story:'A Soviet machine gun in the trench across the balka has been firing on our positions for days. You have a captured Soviet sniper rifle and the sun is in your face this morning, so watch your lens. Kill the gunner and loader and come back.',
+  history:"Sepp Allerberger, the joiner’s apprentice from the Alps, picked up a dead Russian’s sniper rifle in a ditch on the Mius and found he had the gift. With the captured Mosin he killed 27 before he ever saw sniper school, and ended the war with 257 and, he said, the Knight’s Cross from Field Marshal Schörner himself. The Soviets called the Gebirgsjäger snipers “the eyes of the devil”.",
+  sources:[W('Josef Allerberger (Military Wiki)','https://military-history.fandom.com/wiki/Josef_Allerberger'),W('Albrecht Wacker, Sniper on the Eastern Front (Pen & Sword, 2005)','https://www.pen-and-sword.co.uk/Sniper-on-the-Eastern-Front/p/18736')]},
+ {title:'Hedgerows',place:'Hill 192, east of St-Lô, Normandy',date:'10 July 1944',time:'07:30',side:'usa',enemy:'ger',unit:'38th Infantry · 2nd Infantry Division',
+  spotter:'Pvt. Novak',rifle:'m1903',theme:'green',terrain:'bocage',sun:[248,10.6],wind:[3,10],obj:{type:'officer'},officerName:'Artillery observer',
+  story:'From Hill 192 the Germans can see every road to St-Lô. Tomorrow the division attacks. Their artillery observer comes up to his post behind the hedgerows every morning. Work through the bocage, kill him, and come back.',
+  history:"The hedgerows were full of German snipers in camouflage smocks, tied into the trees and dug under the banks, and the GIs said every hedge had one. Every morning the observer on Hill 192 looked down on the whole American front. The division’s snipers went out to blind him before the attack.",
+  sources:[W('St-Lô (7–19 July 1944), American Forces in Action (US Army, 1946)','https://ibiblio.org/hyperwar/USA/USA-A-StLo/USA-A-StLo-3.html')]},
+ {title:'Kapellen',place:'Kapellen, north of Antwerp, Belgium',date:'6 October 1944',time:'09:00',side:'can',enemy:'ger',unit:'The Calgary Highlanders · Scout and sniper platoon',
+  spotter:'Cpl. Kormendy',rifle:'enfield',theme:'autumn',terrain:'polder',sun:[111,9.7],wind:[6,15],obj:{type:'count',n:2,names:['MG gunner','MG loader'],label:'Kill the MG gunner and loader on the dyke'},officerName:'German company officer',
+  story:'The battalion is pushing north from Antwerp toward the Scheldt. A German machine gun dug in behind the dykes holds up the advance. The polder is flat and wet; use the dykes and ditches. Kill the gunner and loader and come back.',
+  history:"Ken Bell’s photograph of Sgt. Harold Marshall, face veiled, Denison smock covered in leaves, No. 4 rifle on his shoulder and kukri at his belt, became the face of the Canadian Army’s sniper. With Cpl. Kormendy he went ahead of the Calgary Highlanders through the polders, killing the Germans who held the dykes.",
+  sources:[W('Harold Marshall (Wikipedia)','https://en.wikipedia.org/wiki/Harold_Marshall_(sniper)'),W('Calgary Highlanders: Scouts & Snipers Platoon','https://calgaryhighlanders.com/about-the-regiment/detailed-history/calgary-highlanders-1939-45/scouts-snipers/')]},
+ {title:'Border of East Prussia',place:'East Prussian border',date:'October 1944',time:'09:00',side:'ger',enemy:'sov',unit:'196th Grenadier Regiment · 68th Infantry Division',
+  spotter:'Gefr. Lange',rifle:'k98',theme:'autumn',terrain:'farm',sun:[41,13.4],wind:[4,13],obj:{type:'officer'},officerName:'Soviet battalion officer',
+  story:'The Red Army stands at the border of East Prussia. A Soviet battalion officer visits his observation post each morning. Kill him and come back. Every kill needs a witness for your sniper’s book.',
+  history:"Bruno Sutkus, the East Prussian boy with the sniper’s book, guarded the border of his homeland. Each of his 209 kills was signed by a witness and his battalion commander. The Russians put a bounty on “the sniper of the Šešupė” and he received the Sniper’s Badge in gold.",
+  sources:[W('Bruno Sutkus (Wikipedia)','https://en.wikipedia.org/wiki/Bruno_Sutkus')]},
+ {title:'Across the Valley',place:'Eastern Carpathians',date:'October 1944',time:'10:00',side:'ger',enemy:'sov',unit:'144th Gebirgsjäger Regiment · 3rd Mountain Division',
+  spotter:'Gefr. Steiner',rifle:'k98',theme:'autumn',terrain:'mountain',sun:[53,25.8],wind:[3,12],obj:{type:'officer'},officerName:'Soviet battalion officer',rangeBest:[450,950],
+  op:{x:28,z:-470},hq:{x:-20,z:-440},
+  story:'A Soviet officer directs the attack on the pass from a post on the far side of the valley, 700 to 1,000 m from our slope. The ZF39 drum stops at 800 m: hold over beyond it. Kill him and come back.',
+  history:"Matthäus Hetzenauer, the Tyrolean, was the deadliest sniper of the Wehrmacht: 345 confirmed, and the stories said many more. In the Carpathians he killed a Soviet officer at 1,100 m across a valley, and with his G43 broke up whole attacks. He received the Knight’s Cross, and the Soviets kept him five years in their camps.",
+  sources:[W('Matthäus Hetzenauer (Wikipedia)','https://en.wikipedia.org/wiki/Matth%C3%A4us_Hetzenauer')]},
+ {title:'Last Winter',place:'Near Ilmsdorf, East Prussia',date:'26 January 1945',time:'10:00',side:'sov',enemy:'ger',unit:'184th Rifle Division · women’s sniper platoon',
+  spotter:'Sgt. Kalugina',rifle:'mosin',theme:'snow',terrain:'farm',sun:[230,8.4],wind:[4,13],obj:{type:'count',n:3,names:['MG gunner','MG loader','Battalion officer'],label:'Kill the MG crew and the officer directing them'},officerName:'Battalion officer',arty:[12,20],
+  story:'The division is breaking into East Prussia. A German machine gun at the estate and the officer directing it are holding up the assault. Our guns fire often: shoot when they fire. Kill the gunner, the loader and the officer, and come back.',
+  history:"Roza Shanina, the “unseen terror of East Prussia” as the Canadian and Soviet press called her, could fire two aimed shots on two targets in a single breath. She ran away from the rear to the front, rode on self-propelled guns into the attack, and wrote in her diary that the essence of her happiness was fighting for the happiness of others. She fell at Reichau with 59 kills, aged twenty.",
+  sources:[W('Roza Shanina (Wikipedia)','https://en.wikipedia.org/wiki/Roza_Shanina')]},
+ {title:'Moltke Bridge',place:'Moltke Bridge, Berlin',date:'29 April 1945',time:'07:00',side:'sov',enemy:'ger',unit:'150th Rifle Division · 3rd Shock Army',
+  spotter:'Sgt. Zagitov',rifle:'mosin',theme:'mud',terrain:'urban',sun:[270,10.8],wind:[3,10],obj:{type:'count',n:3,names:['Defender','MG gunner','MG loader'],label:'Kill three of the defenders covering the bridge'},officerName:'SS officer',river:true,
+  story:'Our battalions crossed the half-wrecked Moltke Bridge last night. SS and Volkssturm in the ruins beyond the Spree are firing on everyone who follows. Kill three of them from our bank and come back.',
+  history:"The final assault. The snipers of the 150th Rifle Division covered the storm groups across the Moltke Bridge toward the Reichstag, picking off the SS in the windows of “Himmler’s house” until the Red Banner flew over the Reichstag.",
+  sources:[W('Moltke Bridge (Wikipedia)','https://en.wikipedia.org/wiki/Moltke_Bridge'),W('Antony Beevor, Berlin: The Downfall 1945 (2002)','https://www.penguin.co.uk/books/30920/berlin-by-beevor-antony/9780141032399')]},
+ {title:'Taiga Shaman',place:'Foothills of the Greater Khingan, Manchuria',date:'12 August 1945',time:'08:00',side:'sov',enemy:'jap',unit:'Transbaikal Front',
+  spotter:'Pvt. Tsyrenov',rifle:'mosin',theme:'green',terrain:'steppe',sun:[349,10.3],wind:[4,12],obj:{type:'count',n:2,names:['Japanese officer'],label:'Kill the two Japanese officers'},officerName:'Japanese officer',decoys:2,officers2:true,
+  story:'The Kwantung Army is falling back into the Khingan foothills. Two officers are rallying the rearguard on the hill ahead. The morning sun is in your face. Work a helmet on a string (G) to draw their sniper, kill both officers and come back.',
+  history:"The Germans called him the “Taiga Shaman”: Semyon Nomokonov, the Evenk hunter who carved a dot on his pipe for every soldier and a cross for every officer. He killed 360 Germans, including a major general, then went east and in August 1945 killed the Kwantung Army’s officers in the Khingan with the same tricks: helmets on strings, mirror shards and silent horsehair boots. Front command gave him a rifle, binoculars and a horse.",
+  sources:[W('Semyon Nomokonov (Wikipedia)','https://en.wikipedia.org/wiki/Semyon_Nomokonov'),W('Номоконов, Семён Данилович (Russian Wikipedia)','https://ru.wikipedia.org/wiki/%D0%9D%D0%BE%D0%BC%D0%BE%D0%BA%D0%BE%D0%BD%D0%BE%D0%B2,_%D0%A1%D0%B5%D0%BC%D1%91%D0%BD_%D0%94%D0%B0%D0%BD%D0%B8%D0%BB%D0%BE%D0%B2%D0%B8%D1%87')]}
+];
+const MQ=new URLSearchParams(location.search);
+const MI=clamp(parseInt(MQ.get('m'),10)||7,1,MISSIONS.length),M=MISSIONS[MI-1],BASE=MI===7;
+const SPOT=M.spotter,SPOTN=SPOT.split(' ').pop();
+// player and enemy armies: adjective, uniform colours, helmet shape
+const ARMY={sov:{adj:'Soviet',uni:0x6b6446,off:0x5d5a3e,legs:0x625c40,helm:'sov',helmC:0x4d5434},ger:{adj:'German',uni:0x5f6458,off:0x4d5247,legs:0x575b51,helm:'ger',helmC:0x4a4f46},
+  rom:{adj:'Romanian',uni:0x6e6248,off:0x5e5440,legs:0x645a43,helm:'sov',helmC:0x56523c},jap:{adj:'Japanese',uni:0x77714a,off:0x6a643f,legs:0x6d6744,helm:'sov',helmC:0x5d5a3c},
+  fin:{adj:'Finnish'},usa:{adj:'American'},can:{adj:'Canadian'}};
+const EN=ARMY[M.enemy];
+// player smock per army (Soviet amoeba, Finnish snowsuit, German splinter, US and Canadian drab)
+const SMOCK={sov:['#5d6440',['#3a4126','#7b7549','#2d311e','#4c5930']],fin:['#e6e7e3',['#d4d6d2','#f2f2ef','#c9ccc8','#e0e1dc']],ger:['#7b7a5c',['#4f5a3a','#8e7f58','#5c5f45','#3f472e']],
+  usa:['#5b5a3e',['#4d4c33','#666547','#55543a','#4a4a32']],can:['#7a6e4e',['#5d5238','#8b7d55','#4b5134','#6c6244']]}[M.side];
+const MEDALS={sov:['Medal “For Courage”','Order of Glory, 3rd class','Order of the Red Star','Order of the Red Banner','Hero of the Soviet Union'],
+  fin:['Medal of Liberty, 2nd class','Medal of Liberty, 1st class','Cross of Liberty, 4th class','Cross of Liberty, 3rd class','Mannerheim Cross'],
+  ger:['Iron Cross, 2nd class','Sniper’s Badge in bronze','Sniper’s Badge in silver','Iron Cross, 1st class','Sniper’s Badge in gold'],
+  usa:['Bronze Star','Bronze Star with “V”','Silver Star','Silver Star with oak leaf cluster','Distinguished Service Cross'],
+  can:['Mentioned in Dispatches','Military Medal','Military Medal and bar','Distinguished Conduct Medal','Distinguished Conduct Medal and Military Medal']}[M.side];
+// theme palettes: ground colours by cover, grass tufts, bushes, sky, fog, far ground, hemisphere light
+const THEMES={
+  mud:{co:{open:[.40,.36,.25],grass:[.50,.46,.28],bush:[.32,.33,.21],crater:[.25,.22,.17],rubble:[.42,.40,.36]},tuft:[[.55,.5,.28],[.68,.6,.34]],bush:[[.25,.28,.16],[.33,.34,.2]],sky:0xa9ada4,fog:[220,1350],far:0x5d5644,hemi:[0xdcdfd2,0x4b4334,.9],sunC:[0xffe0b0,.85],rear:[.40,.38,.33]},
+  frost:{co:{open:[.50,.48,.43],grass:[.58,.55,.45],bush:[.38,.39,.32],crater:[.33,.31,.27],rubble:[.50,.49,.46]},tuft:[[.62,.58,.45],[.72,.68,.55]],bush:[[.33,.35,.27],[.42,.43,.35]],sky:0xb3b6b4,fog:[200,1250],far:0x77746a,hemi:[0xe2e5e2,0x5b5850,.95],sunC:[0xfff0d8,.75],rear:[.46,.45,.41]},
+  snow:{co:{open:[.86,.87,.88],grass:[.78,.77,.70],bush:[.62,.65,.62],crater:[.64,.64,.64],rubble:[.70,.70,.69]},tuft:[[.66,.6,.46],[.78,.72,.56]],bush:[[.5,.56,.52],[.66,.7,.68]],sky:0xc6ccd2,fog:[180,1150],far:0xd2d6d9,hemi:[0xeef2f6,0x8d8f90,.95],sunC:[0xffe6c8,.6],rear:[.82,.83,.84],snow:true},
+  summer:{co:{open:[.55,.48,.31],grass:[.62,.56,.33],bush:[.32,.37,.19],crater:[.34,.29,.21],rubble:[.52,.48,.42]},tuft:[[.66,.58,.33],[.76,.67,.4]],bush:[[.24,.33,.14],[.34,.42,.2]],sky:0xb4c0c8,fog:[320,1700],far:0x8a7c55,hemi:[0xe8ecf0,0x5e5236,1],sunC:[0xfff2dc,1],rear:[.52,.46,.31]},
+  green:{co:{open:[.38,.42,.24],grass:[.42,.49,.24],bush:[.24,.32,.15],crater:[.28,.25,.18],rubble:[.44,.43,.38]},tuft:[[.42,.52,.22],[.55,.62,.3]],bush:[[.17,.29,.11],[.27,.38,.16]],sky:0xaebcc4,fog:[260,1500],far:0x4f5a33,hemi:[0xe2e8ea,0x3f4630,.95],sunC:[0xfff0d8,.95],rear:[.38,.41,.25]},
+  autumn:{co:{open:[.45,.40,.27],grass:[.56,.48,.29],bush:[.38,.31,.18],crater:[.29,.25,.18],rubble:[.46,.43,.38]},tuft:[[.6,.5,.28],[.7,.6,.35]],bush:[[.38,.28,.14],[.5,.38,.18]],sky:0xa4aaa9,fog:[220,1350],far:0x5d5340,hemi:[0xdde0dc,0x4b4334,.9],sunC:[0xffe4c0,.8],rear:[.43,.39,.29]},
+  jungle:{co:{open:[.36,.34,.21],grass:[.52,.55,.28],bush:[.14,.27,.10],crater:[.27,.24,.17],rubble:[.42,.41,.36]},tuft:[[.52,.58,.26],[.66,.68,.34]],bush:[[.1,.25,.08],[.18,.34,.12]],sky:0xbec8c2,fog:[150,1000],far:0x2e3d22,hemi:[0xe6eee6,0x34402a,1],sunC:[0xfff4e0,.95],rear:[.33,.36,.2]}};
+const TH=THEMES[M.theme];
 
 // ---------- ballistics constants (set per rifle by applyRifle) ----------
 let MV=865, KD=0.00098, SIGHT_H=0.07;const G=9.81, MPH=0.44704;
-const SUN_AZ=72, SUN_EL=13;
+const SUN_AZ=M.sun[0], SUN_EL=M.sun[1];
 
 // ======================= WORLD DATA =======================
 const GX0=-450, GZ0=-500, GW=901, GD=951;
-const ridgeZ=x=>150+12*Math.sin(x*0.012);
+const TER=M.terrain,RIDGE0=TER==='mountain'?230:150,RIDGE_H={polder:1.1,steppe:3.6,bocage:3.2,mountain:5}[TER]??4.2;
+const ridgeZ=x=>RIDGE0+12*Math.sin(x*0.012);
+// earth banks: bocage hedgerows and polder dykes [x0,z0,x1,z1,height,width]
+const BANKS=[];
+const segD=(x,z,a)=>{const dx=a[2]-a[0],dz=a[3]-a[1],t=clamp(((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz),0,1);return Math.hypot(x-a[0]-dx*t,z-a[1]-dz*t)};
+const RIVER=M.river?{z:-135,half:14,bx:-40}:null;
 const craters=[], grass=[], bushes=[], rubbleZones=[], obstacles=[], landmarks=[];
 const farFromLines=z=>Math.abs(z+232)>12&&Math.abs(z-348)>12;
-while(craters.length<58){const c={x:R(-410,410),z:R(-205,300),r:R(2.2,6.5)};if(!farFromLines(c.z))continue;if(Math.hypot(c.x+40,c.z-55)<12)continue;c.depth=c.r*0.24;craters.push(c)}
+const NCRAT=BASE?58:{forest:30,jungle:26,polder:24,bocage:28,steppe:40,farm:36,mountain:34,urban:70}[TER]??58;
+while(craters.length<NCRAT){const c={x:R(-410,410),z:R(-205,300),r:R(2.2,6.5)};if(!farFromLines(c.z))continue;if(Math.hypot(c.x+40,c.z-55)<12)continue;c.depth=c.r*0.24;craters.push(c)}
 [[-150,40],[60,22],[-20,118],[185,45],[-230,140]].forEach(([x,z])=>{for(let i=0;i<4;i++){const r=R(2.5,5.5);craters.push({x:x+R(-14,14),z:z+R(-10,10),r,depth:r*0.24})}});
 for(let i=0;i<55;i++)grass.push({x:R(-415,415),z:R(-195,295),r:R(7,24)});
 grass.push({x:-130,z:124,r:22},{x:60,z:128,r:17},{x:-62,z:30,r:18},{x:152,z:32,r:15},{x:-250,z:60,r:22},{x:-30,z:-20,r:16},{x:95,z:-40,r:14});
@@ -354,10 +519,35 @@ function bush(x,z,r){bushes.push({x,z,r,top:0})}
 for(let x=-262;x<-50;x+=3.1){if(rnd()<0.18)continue;bush(x+R(-.6,.6),18+Math.sin(x*0.05)*3+R(-.8,.8),R(1.2,2.1))}
 for(let x=70;x<272;x+=3.1){if(rnd()<0.2)continue;bush(x+R(-.6,.6),80+Math.sin(x*0.04)*4,R(1.2,2.1))}
 for(let x=-360;x<360;x+=4.5){if(rnd()<0.45)continue;bush(x,262+R(-3,3),R(1.3,2.4))}
-for(let i=0;i<150;i++){const z=R(-160,330);if(Math.abs(z-348)<10)continue;bush(R(-420,420),z,R(1,2.3))}
+for(let i=0;i<(TER==='polder'?50:150);i++){const z=R(-160,330);if(Math.abs(z-348)<10)continue;bush(R(-420,420),z,R(1,2.3))}
+// ---------- per-mission terrain features: trees, hedgerows, dykes, jungle undergrowth ----------
+const trees=[];// {x,z,r (canopy),h,type}
+const TREE_SN=[{x:-95,z:-206,h:10},{x:35,z:-198,h:11},{x:160,z:-210,h:9.5}];
+function tree(x,z,type,h){const r={pine:R(1.8,2.6),birch:R(1.6,2.3),oak:R(2.4,3.4),palm:R(2.2,3),poplar:R(1.1,1.5),larch:R(1.7,2.4)}[type];trees.push({x,z,r,h:h||{pine:R(11,17),birch:R(9,14),oak:R(7,10),palm:R(9,14),poplar:R(14,19),larch:R(10,15)}[type],type,top:0})}
+const nearKey=(x,z)=>Math.abs(z-348)<16||Math.abs(z+232)<16||Math.hypot(x-(M.op?M.op.x:28),z-(M.op?M.op.z:-257.6))<35||Math.hypot(x+20,z+345)<30||Math.hypot(x-150,z+330)<34||Math.hypot(x+120,z+60)<14;
+const inField=(x,z)=>z>-226&&z<300&&Math.abs(x)<330;
+if(!BASE){
+  const TT={forest:M.theme==='green'?['birch','pine','birch']:M.theme==='autumn'?['oak','oak','pine']:['pine','pine','birch'],jungle:['palm'],mountain:['pine'],steppe:['larch'],farm:['birch','oak'],polder:['poplar'],bocage:['oak'],urban:['birch']}[TER]||['oak'];
+  const dens={forest:2600,jungle:2400,mountain:2000,steppe:M.theme==='green'?700:120,farm:300,polder:120,bocage:260,urban:90}[TER]||0;
+  for(let i=0;i<dens;i++){const x=R(-440,440),z=R(-490,445);if(nearKey(x,z))continue;if(inField(x,z)&&rnd()>(TER==='jungle'?.10:.025))continue;if(RIVER&&Math.abs(z-RIVER.z)<RIVER.half+4)continue;tree(x,z,TT[i%TT.length])}
+  // copses in no-man's-land give cover on the way forward
+  if(['forest','mountain','farm','steppe','bocage'].includes(TER))for(let c=0;c<7;c++){const cx=R(-280,280),cz=R(-120,250);for(let k=0;k<7;k++){const x=cx+R(-14,14),z=cz+R(-10,10);if(!nearKey(x,z))tree(x,z,TT[k%TT.length])}}
+  if(M.treeSnipers)for(const t of TREE_SN){tree(t.x,t.z,'palm',t.h+2.4);trees[trees.length-1].nohash=true}
+  if(TER==='jungle'){for(let i=0;i<260;i++){const z=R(-200,330);if(Math.abs(z-348)<10)continue;bush(R(-420,420),z,R(1.4,2.8))}for(let i=0;i<40;i++)grass.push({x:R(-415,415),z:R(-195,295),r:R(10,26)})}
+  if(TER==='bocage'){// field boundaries: earth banks topped with hedges, gaps for gates
+    for(const z of[245,95,-60,-150]){for(let x=-420;x<420;x+=R(55,80)){const L=R(35,60);if(z===-150&&Math.abs(x+L/2-28)<70)continue;BANKS.push([x,z,x+L,z+R(-6,6),1.3,1.6])}}
+    for(const x of[-330,-200,-75,60,190,320]){for(let z=-210;z<300;z+=R(60,90)){const L=R(30,55);BANKS.push([x+R(-8,8),z,x+R(-8,8),z+L,1.3,1.6])}}
+    for(const b of BANKS){const L=Math.hypot(b[2]-b[0],b[3]-b[1]);for(let t=0;t<L;t+=2.4){if(rnd()<.12)continue;const f=t/L;bush(lerp(b[0],b[2],f)+R(-.4,.4),lerp(b[1],b[3],f)+R(-.4,.4),R(1.3,2.0));if(rnd()<.08)tree(lerp(b[0],b[2],f),lerp(b[1],b[3],f),'oak')}}}
+  if(TER==='polder'){for(const z of[70,-105]){BANKS.push([-460,z,460,z+R(-3,3),2.3,4.5]);for(let x=-430;x<430;x+=R(14,22))if(!nearKey(x,z-6)&&rnd()<.7)tree(x,z-6,'poplar')}
+    for(const z of[150,-20,-170])for(let x=-440;x<440;x+=3.5)if(rnd()<.6)grass.push({x,z:z+R(-2,2),r:R(2.5,4)})}
+}
 
 function hRaw(x,z){
-  let h=4.2*Math.exp(-(((z-ridgeZ(x))/30)**2));
+  let h=RIDGE_H*Math.exp(-(((z-ridgeZ(x))/30)**2));
+  if(TER==='mountain')h+=-9*Math.exp(-(((z+70)/110)**2))+24*smooth01((-150-z)/280)+7*smooth01((z-80)/240);
+  for(const b of BANKS){const d=segD(x,z,b);if(d<b[5]*2.2)h+=b[4]*Math.exp(-((d/b[5])**2))}
+  if(TER==='polder')for(const zz of[150,-20,-170]){const t=Math.abs(z-zz);if(t<2.2)h-=.8*smooth01((2.2-t)/1)}
+  if(RIVER){const t=Math.abs(z-RIVER.z);if(t<RIVER.half+6)h-=3.2*smooth01((RIVER.half+6-t)/6)}
   h+=0.22*Math.sin(x*0.021+1.3)*Math.cos(z*0.017)+0.15*Math.sin(x*0.047+z*0.031);
   h+=1.6*smooth01((-150-z)/110);
   for(const c of craters){const dx=x-c.x,dz=z-c.z,d2=dx*dx+dz*dz,r2=c.r*c.r*2;if(d2<r2){const d=Math.sqrt(d2)/c.r;h+=d<1?-c.depth*(1-d*d):c.depth*0.35*(1-(d-1)/0.4142)}}
@@ -370,12 +560,13 @@ for(let j=0;j<GD;j++)for(let i=0;i<GW;i++)HG[j*GW+i]=hRaw(GX0+i,GZ0+j);
 let OUT_H=null; // ground height of the long-range lane beyond the west edge
 function hAt(x,z){if(x<GX0&&OUT_H!==null)return OUT_H;const fx=clamp(x-GX0,0,GW-1.001),fz=clamp(z-GZ0,0,GD-1.001),i=fx|0,j=fz|0,tx=fx-i,tz=fz-j,o=j*GW+i;return(HG[o]*(1-tx)+HG[o+1]*tx)*(1-tz)+(HG[o+GW]*(1-tx)+HG[o+GW+1]*tx)*tz}
 for(const b of bushes)b.top=hAt(b.x,b.z)+b.r*1.25;
+for(const t of trees)t.top=hAt(t.x,t.z)+t.h;
 
 // spatial hash for cover queries
 const CELL=10, hash=new Map();
 function hkey(i,j){return i*10007+j}
 function hadd(item,type,r){const i0=Math.floor((item.x-r)/CELL),i1=Math.floor((item.x+r)/CELL),j0=Math.floor((item.z-r)/CELL),j1=Math.floor((item.z+r)/CELL);for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++){const k=hkey(i,j);let a=hash.get(k);if(!a)hash.set(k,a=[]);a.push({type,item})}}
-bushes.forEach(b=>hadd(b,'bush',b.r));grass.forEach(g=>hadd(g,'grass',g.r));craters.forEach(c=>hadd(c,'crater',c.r));
+bushes.forEach(b=>hadd(b,'bush',b.r));trees.forEach(t=>{if(!t.nohash)hadd(t,'bush',t.r)});grass.forEach(g=>hadd(g,'grass',g.r));craters.forEach(c=>hadd(c,'crater',c.r));
 function cell(x,z){return hash.get(hkey(Math.floor(x/CELL),Math.floor(z/CELL)))||[]}
 function coverAt(x,z){
   let best='open';
@@ -395,13 +586,13 @@ const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'h
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();
-const SKY=0xa9ada4;
+const SKY=TH.sky;
 scene.background=new THREE.Color(SKY);
-scene.fog=new THREE.Fog(SKY,220,1350);
+scene.fog=new THREE.Fog(SKY,TH.fog[0],TH.fog[1]);
 const camera=new THREE.PerspectiveCamera(45,1,0.1,3200);
 camera.rotation.order='YXZ';
-scene.add(new THREE.HemisphereLight(0xdcdfd2,0x4b4334,0.9));
-const sunL=new THREE.DirectionalLight(0xffe0b0,0.85);
+scene.add(new THREE.HemisphereLight(TH.hemi[0],TH.hemi[1],TH.hemi[2]));
+const sunL=new THREE.DirectionalLight(TH.sunC[0],TH.sunC[1]);
 const sunDir=new V3(Math.sin(SUN_AZ*DEG)*Math.cos(SUN_EL*DEG),Math.sin(SUN_EL*DEG),-Math.cos(SUN_AZ*DEG)*Math.cos(SUN_EL*DEG));
 sunL.position.copy(sunDir).multiplyScalar(1000);scene.add(sunL);scene.add(sunL.target);
 sunL.castShadow=true;sunL.shadow.mapSize.set(2048,2048);sunL.shadow.bias=-0.0004;sunL.shadow.normalBias=0.35;sunL.shadow.camera.near=10;sunL.shadow.camera.far=900;
@@ -421,8 +612,9 @@ const ROAD=[[-95,470],[-82,300],[-78,180],[-92,60],[-105,-80],[-112,-200],[-110,
 function roadDist(x,z){let best=1e9;for(let i=1;i<ROAD.length;i++){const[ax,az]=ROAD[i-1],[bx,bz]=ROAD[i];const dx=bx-ax,dz=bz-az,t=clamp(((x-ax)*dx+(z-az)*dz)/(dx*dx+dz*dz),0,1);const d=Math.hypot(x-ax-dx*t,z-az-dz*t);if(d<best)best=d}return best}
 
 // sky dome
+const SKYC=new THREE.Color(BASE?0xaaacaa:SKY);
 {const g=new THREE.SphereGeometry(2600,24,12),cols=[],p=g.attributes.position,c=new THREE.Color();
-  for(let i=0;i<p.count;i++){const y=p.getY(i)/2600;c.setRGB(lerp(.70,.50,clamp(y*2.2,0,1)),lerp(.71,.55,clamp(y*2.2,0,1)),lerp(.68,.60,clamp(y*2.2,0,1)));cols.push(c.r,c.g,c.b)}
+  for(let i=0;i<p.count;i++){const y=p.getY(i)/2600;c.setRGB(lerp(SKYC.r*1.04,SKYC.r*.74,clamp(y*2.2,0,1)),lerp(SKYC.g*1.04,SKYC.g*.8,clamp(y*2.2,0,1)),lerp(SKYC.b*1.04,SKYC.b*.9,clamp(y*2.2,0,1)));cols.push(c.r,c.g,c.b)}
   g.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
   const sky=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.BackSide,fog:false,depthWrite:false}));sky.userData.noShadow=true;scene.add(sky);}
 function radialTex(inner='rgba(255,255,255,1)',outer='rgba(255,255,255,0)',size=64){const cv=document.createElement('canvas');cv.width=cv.height=size;const x=cv.getContext('2d');const g=x.createRadialGradient(size/2,size/2,0,size/2,size/2,size/2);g.addColorStop(0,inner);g.addColorStop(1,outer);x.fillStyle=g;x.fillRect(0,0,size,size);return new THREE.CanvasTexture(cv)}
@@ -432,17 +624,18 @@ const puffTex=radialTex('rgba(255,255,255,0.95)','rgba(255,255,255,0)');
 // terrain mesh
 {const g=new THREE.PlaneGeometry(900,950,450,475);g.rotateX(-Math.PI/2);g.translate(0,0,-25);
   const p=g.attributes.position,cols=new Float32Array(p.count*3),c=new THREE.Color();
-  const CO={open:[.40,.36,.25],grass:[.50,.46,.28],bush:[.32,.33,.21],crater:[.25,.22,.17],rubble:[.42,.40,.36]};
+  const CO=TH.co,RE=TH.rear;
   for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i),h=hAt(x,z);p.setY(i,h);
     let col=CO[coverAt(x,z)];let r=col[0],gg=col[1],b=col[2];
     const n=0.035*Math.sin(x*0.061+z*0.043)+0.03*Math.sin(x*0.13-z*0.087)+0.02*Math.sin(x*0.027-z*0.019);r+=n;gg+=n;b+=n*0.6;
-    if(z<-190){r=lerp(r,.40,.5);gg=lerp(gg,.38,.5);b=lerp(b,.33,.5)}
+    if(z<-190){r=lerp(r,RE[0],.5);gg=lerp(gg,RE[1],.5);b=lerp(b,RE[2],.5)}
     if(Math.abs(z+232)<2.2&&Math.abs(x)<262||Math.abs(z-348)<2.2&&Math.abs(x)<330){r=.22;gg=.2;b=.16}
-    const rd=roadDist(x,z);if(rd<4){const k=smooth01((4-rd)/1.5);r=lerp(r,.37,k);gg=lerp(gg,.32,k);b=lerp(b,.24,k)}
+    const rd=roadDist(x,z);if(rd<4){const k=smooth01((4-rd)/1.5);r=lerp(r,TH.snow?.6:.37,k);gg=lerp(gg,TH.snow?.57:.32,k);b=lerp(b,TH.snow?.52:.24,k)}
+    if(RIVER&&Math.abs(z-RIVER.z)<RIVER.half+5){r=lerp(r,.3,.6);gg=lerp(gg,.28,.6);b=lerp(b,.24,.6)}
     cols[i*3]=r*1.12;cols[i*3+1]=gg*1.12;cols[i*3+2]=b*1.12}
   g.setAttribute('color',new THREE.BufferAttribute(cols,3));g.computeVertexNormals();
   const tm=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,map:groundTex}));tm.receiveShadow=true;tm.userData.recvOnly=true;scene.add(tm);
-  const far=new THREE.Mesh(new THREE.PlaneGeometry(7000,7000),new THREE.MeshLambertMaterial({color:0x5d5644}));far.rotation.x=-Math.PI/2;far.position.y=-4;far.userData.recvOnly=true;scene.add(far);}
+  const far=new THREE.Mesh(new THREE.PlaneGeometry(7000,7000),new THREE.MeshLambertMaterial({color:TH.far}));far.rotation.x=-Math.PI/2;far.position.y=-4;far.userData.recvOnly=true;scene.add(far);}
 
 // ---------- static box batching ----------
 const boxList=[];
@@ -482,18 +675,22 @@ building(-180,95,14,10,3.6,{broken:true,color:0x8d8676,openings:[{side:'S',a:-1,
 building(215,132,12,8,3.0,{broken:true,color:0x837c6c,skip:['E']});
 landmarks.push({x:-180,z:95,name:'the ruined farmhouse',r:16,w:0.5},{x:215,z:132,name:'the ruined barn',r:14,w:0.5});
 // Enemy rear
-const HQ={x:-20,z:-345,w:22,d:14};
-const hqBase=building(HQ.x,HQ.z,HQ.w,HQ.d,7,{color:0x968d7c,roof:true,openings:[{side:'S',a:-1.2,b:1.2,y0:0,y1:2.4},{side:'S',a:-8,b:-6,y0:1,y1:2.4},{side:'S',a:6,b:8,y0:1,y1:2.4},{side:'S',a:-8,b:-6,y0:4.2,y1:5.6},{side:'S',a:6,b:8,y0:4.2,y1:5.6}]});
-const FAC={x:150,z:-330,w:40,d:24};
-const facWin=[];for(const k of[-15,-9,-3,3,9,15]){facWin.push({side:'S',a:k-1,b:k+1,y0:1,y1:2.6},{side:'S',a:k-1,b:k+1,y0:4.2,y1:5.8})}
-const facBase=building(FAC.x,FAC.z,FAC.w,FAC.d,11,{color:0x7f6f62,openings:facWin,floors:[3.6]});
+const HQ={...(M.hq||{x:-20,z:-345}),w:22,d:14},OPP=M.op||{x:28,z:-257.6};
+const WELL={x:70,z:-268},GUNS=[{x:45,z:-282},{x:85,z:-286}],TRACTORS=[{x:20,z:-300},{x:115,z:-302}];
+const WOOD=['forest','jungle','mountain','steppe'].includes(TER)&&!BASE;
+const hqBase=building(HQ.x,HQ.z,HQ.w,HQ.d,7,{color:WOOD?0x6a5440:0x968d7c,roof:true,openings:[{side:'S',a:-1.2,b:1.2,y0:0,y1:2.4},{side:'S',a:-8,b:-6,y0:1,y1:2.4},{side:'S',a:6,b:8,y0:1,y1:2.4},{side:'S',a:-8,b:-6,y0:4.2,y1:5.6},{side:'S',a:6,b:8,y0:4.2,y1:5.6}]});
+// the tall building the enemy sniper uses: a factory in the city, a barn, mill or church elsewhere
+const FACK=BASE||TER==='urban'?{w:40,d:24,h:11,c:0x7f6f62,n:'the factory windows'}:WOOD?{w:24,d:12,h:8,c:0x5e4a36,n:'the loft of the log barn'}:TER==='bocage'?{w:26,d:12,h:10,c:0x8f8676,n:'the farm loft'}:{w:30,d:14,h:9,c:0x8a7d6c,n:'the barn loft'};
+const FAC={x:150,z:-330,w:FACK.w,d:FACK.d};
+const facWin=[];for(let k=-(FACK.w/2-5);k<=FACK.w/2-5;k+=6){facWin.push({side:'S',a:k-1,b:k+1,y0:1,y1:2.6},{side:'S',a:k-1,b:k+1,y0:4.2,y1:5.8})}
+const facBase=building(FAC.x,FAC.z,FAC.w,FAC.d,FACK.h,{color:FACK.c,openings:facWin,floors:[3.6],roof:!BASE&&TER!=='urban',roofColor:WOOD?0x3e3326:0x5a4a3c});
 building(-150,-335,30,18,8,{broken:true,color:0x8a8070,openings:[{side:'S',a:-2,b:2,y0:0,y1:3}]});
 building(-60,-425,26,16,9,{broken:true,color:0x7d7568});
 building(85,-440,34,20,12,{broken:true,color:0x857a6c});
 building(255,-410,22,18,8,{broken:true,color:0x7c7466});
 building(-260,-400,24,16,7,{broken:true,color:0x8a8172});
-// chimney
-{const g=new THREE.CylinderGeometry(1.6,2.4,34,10);const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:0x6e4f40}));m.position.set(40,hAt(40,-395)+17,-395);scene.add(m);obstacles.push({x0:38,x1:42,y0:-2,y1:36,z0:-397,z1:-393,mat:'wall'})}
+// chimney (city only)
+if(BASE||TER==='urban'){const g=new THREE.CylinderGeometry(1.6,2.4,34,10);const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:0x6e4f40}));m.position.set(40,hAt(40,-395)+17,-395);scene.add(m);obstacles.push({x0:38,x1:42,y0:-2,y1:36,z0:-397,z1:-393,mat:'wall'})}
 // tank wreck (landmark)
 {const x=-40,z=55,b=hAt(x,z)-0.2;addBox(x,b,z,3.0,1.25,6.0,0x2f3427,{});addBox(x,b+1.25,z+0.5,2.4,0.85,2.5,0x2c3125,{});addBox(x+0.2,b+1.55,z-2.2,0.18,0.18,3.2,0x262a20,{noCollide:true});
   rubblePile(x,z,9,10,10,0x3a3a30);landmarks.push({x,z,name:'the burnt-out tank',r:22,w:1})}
@@ -514,7 +711,7 @@ function sandbagLine(x0,x1,z,rows,color=0x8b8160){for(let x=x0;x<=x1;x+=0.68){co
 sandbagLine(-260,260,-229.5,2);
 sandbagLine(-320,320,345.6,2,0x7d7556);
 sandbagLine(-63,-56,-230.3,4);
-sandbagLine(25.5,30.5,-256,4);
+sandbagLine(OPP.x-2.5,OPP.x+2.5,OPP.z+1.6,4);
 // listening post ring
 const LP={x:-120,z:-60};
 for(let a=0;a<Math.PI*2;a+=0.3){if(Math.abs(angDiff(a/DEG,0))<35)continue;const x=LP.x+Math.sin(a)*2.3,z=LP.z-Math.cos(a)*2.3,b=hAt(x,z);for(let r=0;r<2;r++)addBox(x,b+r*0.25-0.05,z,0.62,0.26,0.42,0x857b5b,{noCollide:true,ry:-a})}
@@ -525,9 +722,10 @@ obstacles.push({x0:LP.x-2.6,x1:LP.x+2.6,y0:hAt(LP.x,LP.z)-0.5,y1:hAt(LP.x,LP.z)+
 {const posts=[],pts=[];for(const z of[-168,-174]){for(let x=-310;x<=310;x+=3.2){const xx=x+R(-.4,.4),zz=z+R(-.6,.6),b=hAt(xx,zz);addBox(xx,b,zz,0.08,1.2,0.08,0x2f2a22,{noCollide:true});posts.push([xx,b,zz])}}
   for(let i=1;i<posts.length;i++){const a=posts[i-1],c=posts[i];if(Math.abs(a[2]-c[2])>3)continue;for(const y of[.35,.75,1.1])pts.push(a[0],a[1]+y,a[2],c[0],c[1]+y,c[2]);pts.push(a[0],a[1]+.2,a[2],c[0],c[1]+1.1,c[2])}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));scene.add(new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0x2a2620})))}
-// distant city silhouette
-for(let i=0;i<110;i++){const a=R(-75,75)*DEG,d=R(950,1500);const x=Math.sin(a)*d,z=-Math.cos(a)*d-200;const w=R(15,50),h=R(5,22);addBox(x,-1,z,w,h,R(15,40),0x6b6a63,{noCollide:true,ry:R(0,1)})}
-for(let i=0;i<50;i++){const a=R(0,360)*DEG,d=R(1000,1500);addBox(Math.sin(a)*d,-1,-Math.cos(a)*d,R(20,60),R(5,20),R(20,40),0x6d6b62,{noCollide:true})}
+// distant skyline: a ruined city, or a dark tree line
+const CITY=BASE||['urban','farm','polder','bocage'].includes(TER),SKYLINE=CITY?0x6b6a63:TH.snow?0x5d665e:0x3a4430;
+for(let i=0;i<110;i++){const a=R(-75,75)*DEG,d=R(950,1500);const x=Math.sin(a)*d,z=-Math.cos(a)*d-200;const w=R(15,50),h=R(5,22)*(CITY?1:.7);addBox(x,-1,z,w,h,R(15,40),SKYLINE,{noCollide:true,ry:R(0,1)})}
+for(let i=0;i<50;i++){const a=R(0,360)*DEG,d=R(1000,1500);addBox(Math.sin(a)*d,-1,-Math.cos(a)*d,R(20,60),R(5,20),R(20,40),CITY?0x6d6b62:SKYLINE,{noCollide:true})}
 // ---------- props: crates, drums, wrecks, telegraph line, puddles ----------
 function crates(x,z,n){for(let i=0;i<n;i++){const s=R(.45,.8),xx=x+R(-3,3),zz=z+R(-2.5,2.5),st=i%3===2;addBox(xx,hAt(xx,zz)-.02+(st?s:0),zz,s*1.5,s,s,0x6b5236,{noCollide:true,ry:R(-.5,.5)})}}
 crates(-4,-333,7);crates(-75,-236.5,5);crates(112,-313,6);crates(-162,-323,4);crates(38,-262,3);crates(-40,-232.5,3);crates(0,352,6);crates(-150,353,4);
@@ -553,8 +751,36 @@ function mat2(c){return new THREE.MeshLambertMaterial({color:c})}
         prevTop=top}else{prevTop=null;if(rnd()<.6){const wpts=[];const a=new V3(px,base+h,pz);pts.push(a.x,a.y,a.z,a.x+R(-3,3),hAt(a.x,a.z)+.05,a.z+R(-4,4))}}}
     acc+=L}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));scene.add(new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0x26221d})))}
+// ---------- mission props: ruins, farms, river and bridge, well, guns, sheet of iron ----------
+if(!BASE){
+  const okSpot=(x,z,r)=>!nearKey(x,z)&&!(RIVER&&Math.abs(z-RIVER.z)<RIVER.half+r)&&Math.hypot(x-OPP.x,z-OPP.z)>40;
+  if(TER==='urban'){for(let i=0;i<26;i++){const x=R(-380,380),z=R(-200,300),w=R(10,22),d=R(8,16);if(!okSpot(x,z,12)||Math.abs(x-(OPP.x-110)/2)<14&&z<120)continue;building(x,z,w,d,R(4,9),{broken:true,color:[0x8d8676,0x837c6c,0x7d7568,0x8a8172][i%4]})}}
+  if(TER==='farm'||TER==='polder'){for(const[x,z]of[[-300,-300],[260,-280],[-330,40],[300,90],[-240,250],[230,230]]){if(!okSpot(x,z,10))continue;building(x,z,R(12,16),R(8,10),R(4,5),{color:TER==='polder'?0x8a4a3a:0x9a8f7c,roof:true,roofColor:0x5a3a30,openings:[{side:'S',a:-1,b:1,y0:0,y1:2.2}]});landmarks.push({x,z,name:'the farmhouse',r:16,w:.5})}}
+  if(TER==='mountain'){for(let i=0;i<60;i++){const x=R(-420,420),z=R(-480,420),s=R(1.5,5);if(!okSpot(x,z,5))continue;addBox(x,hAt(x,z)-.6,z,s,s*R(.4,.8),s*R(.6,1),0x77756e,{ry:R(0,3),rx:R(-.2,.2)})}}
+  if(RIVER){const wm=new THREE.Mesh(new THREE.PlaneGeometry(900,RIVER.half*2+4),new THREE.MeshPhongMaterial({color:0x3a4246,specular:0x8a9090,shininess:70}));wm.rotation.x=-Math.PI/2;wm.position.set(0,-1.6,RIVER.z);wm.userData.recvOnly=true;scene.add(wm);
+    const bx=RIVER.bx;for(let z=RIVER.z-RIVER.half-6;z<RIVER.z+RIVER.half+6;z+=2){if(Math.abs(z-RIVER.z+3)<3)continue;addBox(bx,Math.max(hAt(bx,z),-1.2)+.1,z,8,.6,2.05,0x6d665c,{noCollide:true})}
+    for(const s of[-1,1])for(let z=RIVER.z-RIVER.half-6;z<RIVER.z+RIVER.half+6;z+=4)addBox(bx+s*4,Math.max(hAt(bx,z),-1.2)+.7,z,.25,1.1,.25,0x3c3934,{noCollide:true});landmarks.push({x:bx,z:RIVER.z,name:'the bridge',r:30,w:1})}
+  if(M.well){const x=WELL.x,z=WELL.z,b=hAt(x,z);const ring=new THREE.Mesh(new THREE.CylinderGeometry(1,1.1,.9,12,1,true),new THREE.MeshLambertMaterial({color:0x7d7466,side:THREE.DoubleSide}));ring.position.set(x,b+.45,z);scene.add(ring);addBox(x-1.1,b,z,.2,2.4,.2,0x3b3128,{noCollide:true});addBox(x+1.1,b,z,.2,2.4,.2,0x3b3128,{noCollide:true});addBox(x,b+2.4,z,2.4,.15,.15,0x3b3128,{noCollide:true});drums(x+3,z+2,2)}
+  if(M.guns){for(const g of GUNS){const b=hAt(g.x,g.z);addBox(g.x,b+.5,g.z,1.8,.9,.1,0x4a4f3e,{noCollide:true,rx:-.2});const br=new THREE.Mesh(new THREE.CylinderGeometry(.08,.1,3.4,8),mat2(0x2d3326));br.rotation.x=Math.PI/2-.25;br.position.set(g.x,b+1.2,g.z-1.6);scene.add(br);sandbagLine(g.x-4,g.x+4,g.z-3,3)}
+    for(const t of TRACTORS){const b=hAt(t.x,t.z);addBox(t.x,b+.6,t.z,2.2,1.2,4.2,0x4c4d3c);addBox(t.x,b+1.6,t.z+.9,1.9,1,1.8,0x45463a);addBox(t.x-1.15,b+.35,t.z,.35,.7,4.4,0x1f1f1c,{noCollide:true});addBox(t.x+1.15,b+.35,t.z,.35,.7,4.4,0x1f1f1c,{noCollide:true})}}
+  if(M.sheet){for(const sp of M.duel.slice(0,1)){const b=hAt(sp.x,sp.z);addBox(sp.x,b+.55,sp.z-.4,2.2,.04,1.6,0x4a4744,{noCollide:true,rx:-.35});rubblePile(sp.x+2.5,sp.z,4,3,10,0x8a5a44)}
+    {const x=-55,z=-118,b=hAt(x,z)-.2;addBox(x,b,z,3,1.25,6,0x2f3427);addBox(x,b+1.25,z+.5,2.4,.85,2.5,0x2c3125)}{const x=10,z=-128,b=hAt(x,z);addBox(x,b,z,4,1.6,4,0x77746a);addBox(x,b+1.6,z,4.6,.4,4.6,0x6b6860,{noCollide:true})}}
+}
+// trees: trunks and crowns, instanced per type
+if(trees.length){const groups={};for(const t of trees)(groups[t.type]=groups[t.type]||[]).push(t);
+  const snowC=TH.snow;const TCOL={pine:[0x2a3b24,0x24331f],birch:[0x6f8a3c,0x8a9a4a],oak:M.theme==='autumn'?[0x7a5a2a,0x5f4a28]:[0x4a5e2c,0x3c4f26],palm:[0x3f5a24,0x4d6a2a],poplar:M.theme==='autumn'?[0x8a7a3a,0x6f6a34]:[0x4c6a2a,0x5a7430],larch:[0x5a7a34,0x4a6a2c]};
+  const TRUNK={pine:0x4a3a2a,birch:0xd8d4c8,oak:0x3f3326,palm:0x7a6a50,poplar:0x5a5040,larch:0x4f3f2e};
+  for(const ty in groups){const L=groups[ty],m4=new THREE.Matrix4(),q=new THREE.Quaternion(),c=new THREE.Color();
+    const tg=new THREE.CylinderGeometry(ty==='palm'?.14:.16,ty==='palm'?.22:.3,1,6);tg.translate(0,.5,0);
+    const cg=ty==='pine'||ty==='larch'?new THREE.ConeGeometry(1,1,8):ty==='palm'?new THREE.ConeGeometry(1,.35,7):ty==='poplar'?new THREE.SphereGeometry(1,8,6):new THREE.IcosahedronGeometry(1,1);
+    const tm=new THREE.InstancedMesh(tg,new THREE.MeshLambertMaterial({color:TRUNK[ty]}),L.length),cm=new THREE.InstancedMesh(cg,new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),L.length);
+    L.forEach((t,i)=>{const b=hAt(t.x,t.z)-.2;q.setFromAxisAngle(new V3(0,1,0),i*2.1);m4.compose(new V3(t.x,b,t.z),q,new V3(1,t.h,1));tm.setMatrixAt(i,m4);
+      const ch=ty==='pine'||ty==='larch'?t.h*.78:ty==='palm'?1.1:ty==='poplar'?t.h*.62:t.h*.42,cy=ty==='pine'||ty==='larch'?b+t.h*.22+ch/2:ty==='palm'?b+t.h:b+t.h-ch*.5;
+      m4.compose(new V3(t.x,cy,t.z),q,new V3(t.r*(ty==='palm'?1.3:1),ch/(ty==='pine'||ty==='larch'?1:2),t.r*(ty==='palm'?1.3:1)));cm.setMatrixAt(i,m4);
+      c.setHex(TCOL[ty][i%2]);if(snowC&&ty!=='palm')c.lerp(new THREE.Color(0xe8ecef),ty==='birch'||ty==='oak'?.55:.35);c.multiplyScalar(.9+rnd()*.2);cm.setColorAt(i,c)});
+    tm.castShadow=cm.castShadow=true;scene.add(tm,cm)}}
 {// rain water standing in the larger shell holes
-  const pm=new THREE.MeshPhongMaterial({color:0x2f3438,specular:0x9a9a90,shininess:90});
+  const pm=new THREE.MeshPhongMaterial({color:TH.snow?0x9fa8ae:0x2f3438,specular:0x9a9a90,shininess:90});
   for(const c of craters){if(c.r<3)continue;const m=new THREE.Mesh(new THREE.CircleGeometry(c.r*.42,18),pm);m.rotation.x=-Math.PI/2;m.position.set(c.x,hAt(c.x,c.z)+.05,c.z);m.userData.recvOnly=true;scene.add(m)}}
 // flush boxes
 {const g=new THREE.BoxGeometry(1,1,1);const im=new THREE.InstancedMesh(g,new THREE.MeshLambertMaterial({color:0xffffff,map:wallTex}),boxList.length);const m4=new THREE.Matrix4(),q=new THREE.Quaternion(),e=new THREE.Euler(),c=new THREE.Color();
@@ -565,7 +791,7 @@ const tufts=[];let tuftMesh;
 {for(const p of grass){const n=clamp(Math.round(p.r*p.r*0.45),25,260);for(let i=0;i<n;i++){const a=rnd()*Math.PI*2,r=Math.sqrt(rnd())*p.r,x=p.x+Math.cos(a)*r,z=p.z+Math.sin(a)*r;if(coverAt(x,z)==='crater'&&rnd()<.6)continue;tufts.push({x,z,h:R(.6,1.15),s:R(.6,1.2),ry:R(0,6),c:rnd()})}}
   const g=new THREE.ConeGeometry(0.16,1,4);g.translate(0,0.5,0);
   tuftMesh=new THREE.InstancedMesh(g,new THREE.MeshLambertMaterial({color:0xffffff}),tufts.length);tuftMesh.userData.recvOnly=true;const c=new THREE.Color();
-  tufts.forEach((t,i)=>{c.setRGB(lerp(.55,.68,t.c),lerp(.5,.6,t.c),lerp(.28,.34,t.c));tuftMesh.setColorAt(i,c)});setTufts(null);scene.add(tuftMesh)}
+  tufts.forEach((t,i)=>{const T0=TH.tuft[0],T1=TH.tuft[1];c.setRGB(lerp(T0[0],T1[0],t.c),lerp(T0[1],T1[1],t.c),lerp(T0[2],T1[2],t.c));tuftMesh.setColorAt(i,c)});setTufts(null);scene.add(tuftMesh)}
 function setTufts(clear){const m4=new THREE.Matrix4(),q=new THREE.Quaternion(),e=new THREE.Euler();
   tufts.forEach((t,i)=>{let hide=false;if(clear){const d=Math.hypot(t.x-clear.x,t.z-clear.z);const a=Math.abs(angDiff(bearingOf(t.x-clear.x,t.z-clear.z),clear.b));hide=d<6||(d<45&&a<38)||(d<160&&a<15)||(clear.far&&d<clear.far&&a<9)}
     e.set(0,t.ry,0);q.setFromEuler(e);m4.compose(new V3(t.x,hAt(t.x,t.z)-0.05,t.z),q,hide?new V3(0,0,0):new V3(t.s,t.h,t.s));tuftMesh.setMatrixAt(i,m4)});
@@ -573,7 +799,7 @@ function setTufts(clear){const m4=new THREE.Matrix4(),q=new THREE.Quaternion(),e
 // bushes
 let bushMesh;
 {const g=new THREE.IcosahedronGeometry(1,0);bushMesh=new THREE.InstancedMesh(g,new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),bushes.length);const c=new THREE.Color();
-  bushes.forEach((b,i)=>{c.setRGB(R(.25,.33),R(.28,.34),R(.16,.2));bushMesh.setColorAt(i,c)});setBushes(null);scene.add(bushMesh)}
+  bushes.forEach((b,i)=>{const B0=TH.bush[0],B1=TH.bush[1];c.setRGB(lerp(B0[0],B1[0],rnd()),lerp(B0[1],B1[1],rnd()),lerp(B0[2],B1[2],rnd()));bushMesh.setColorAt(i,c)});setBushes(null);scene.add(bushMesh)}
 function setBushes(clear){const m4=new THREE.Matrix4(),q=new THREE.Quaternion();
   bushes.forEach((b,i)=>{const hide=clear&&Math.hypot(b.x-clear.x,b.z-clear.z)<b.r+1.6;q.setFromAxisAngle(new V3(0,1,0),i*1.7);m4.compose(new V3(b.x,hAt(b.x,b.z)+b.r*0.45,b.z),q,hide?new V3(0,0,0):new V3(b.r,b.r*0.85,b.r));bushMesh.setMatrixAt(i,m4)});
   bushMesh.instanceMatrix.needsUpdate=true}
@@ -593,7 +819,7 @@ const EMIT=[{x:TRUCK.x,z:TRUCK.z,y:hAt(TRUCK.x,TRUCK.z)+2.6,rate:9,col:0x3c3a36,
 const MATS={};const mat=c=>MATS[c]||(MATS[c]=new THREE.MeshLambertMaterial({color:c}));
 function canvasTex(size,draw,rep=1){const cv=document.createElement('canvas');cv.width=cv.height=size;draw(cv.getContext('2d'),size);const t=new THREE.CanvasTexture(cv);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep,rep);return t}
 // Soviet 1940s amoeba camouflage smock
-const camoMat=new THREE.MeshLambertMaterial({map:canvasTex(128,(x,s)=>{x.fillStyle='#5d6440';x.fillRect(0,0,s,s);const cols=['#3a4126','#7b7549','#2d311e','#4c5930'];for(let i=0;i<70;i++){x.fillStyle=cols[i%4];x.beginPath();x.ellipse(Math.random()*s,Math.random()*s,4+Math.random()*12,3+Math.random()*7,Math.random()*3,0,7);x.fill()}})});
+const camoMat=new THREE.MeshLambertMaterial({map:canvasTex(128,(x,s)=>{x.fillStyle=SMOCK[0];x.fillRect(0,0,s,s);const cols=SMOCK[1];for(let i=0;i<70;i++){x.fillStyle=cols[i%4];x.beginPath();x.ellipse(Math.random()*s,Math.random()*s,4+Math.random()*12,3+Math.random()*7,Math.random()*3,0,7);x.fill()}})});
 function lbox(w,h,d,m,hit,down=true){const g=new THREE.BoxGeometry(w,h,d);g.translate(0,down?-h/2:h/2,0);g.computeBoundingBox();const me=new THREE.Mesh(g,typeof m==='number'?mat(m):m);me.castShadow=true;if(hit)me.userData.hit=hit;return me}
 function sbox(w,h,d,m){const me=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),typeof m==='number'?mat(m):m);me.castShadow=true;return me}
 function at(m,x,y,z,parent){m.position.set(x,y,z);parent.add(m);return m}
@@ -607,7 +833,8 @@ function makeRifle(scoped){const g=new THREE.Group(),wood=0x4a3220,steel=0x1b1b1
   return g}
 function makeSoldier(kind){
   const soviet=kind==='player'||kind==='spotter',off=kind==='officer';
-  const uni=soviet?camoMat:mat(off?0x4d5247:0x5f6458),tr=soviet?mat(0x3b4028):mat(off?0x3f433b:0x575b51);
+  const uni=soviet?camoMat:mat(off?EN.off:EN.uni),tr=soviet?mat(M.side==='fin'?0xd9dad6:0x3b4028):mat(off?EN.off:EN.legs);
+  const hShape=soviet?(M.side==='ger'?'ger':'sov'):EN.helm;
   const boot=0x1c1916,skin=0xb8957a,lea=0x2b2219;
   const root=new THREE.Group(),body=piv(0,0,0,root),pel=piv(0,.95,0,body);
   at(lbox(.36,.2,.23,tr,'body',false),0,-.1,0,pel);
@@ -634,8 +861,8 @@ function makeSoldier(kind){
   const hg=new THREE.SphereGeometry(.105,12,10);hg.computeBoundingBox();const head=new THREE.Mesh(hg,mat(skin));head.userData.hit='head';head.castShadow=true;at(head,0,.13,0,neck);
   at(sbox(.12,.03,.02,0x3a2c22),0,.15,-.1,neck);
   if(off){at(cyl(.115,.108,.07,0x464a41,12),0,.22,0,neck);const cr=cyl(.15,.12,.05,0x464a41,12);cr.rotation.x=-.12;at(cr,0,.27,.01,neck);at(sbox(.17,.015,.07,0x111111),0,.195,-.12,neck);at(sbox(.04,.03,.01,0xc0b080),0,.27,-.14,neck)}
-  else{const hc=soviet?0x47522f:0x4a4f46;const dome=new THREE.Mesh(new THREE.SphereGeometry(.145,12,7,0,Math.PI*2,0,Math.PI/2),mat(hc));dome.scale.set(1,.95,1.08);dome.castShadow=true;at(dome,0,.155,0,neck);
-    const sk=new THREE.Mesh(new THREE.CylinderGeometry(.148,soviet?.152:.18,soviet?.03:.08,12,1,true),new THREE.MeshLambertMaterial({color:hc,side:THREE.DoubleSide}));sk.scale.z=1.08;sk.castShadow=true;at(sk,0,soviet?.15:.13,0,neck)}
+  else{const hc=soviet?{sov:0x47522f,fin:0xdedfdc,ger:0x55594a,usa:0x4f5236,can:0x4f5236}[M.side]:EN.helmC,hs=hShape==='sov';const dome=new THREE.Mesh(new THREE.SphereGeometry(.145,12,7,0,Math.PI*2,0,Math.PI/2),mat(hc));dome.scale.set(1,.95,1.08);dome.castShadow=true;at(dome,0,.155,0,neck);
+    const sk=new THREE.Mesh(new THREE.CylinderGeometry(.148,hs?.152:.18,hs?.03:.08,12,1,true),new THREE.MeshLambertMaterial({color:hc,side:THREE.DoubleSide}));sk.scale.z=1.08;sk.castShadow=true;at(sk,0,hs?.15:.13,0,neck)}
   const arms={};
   for(const s of[-1,1]){const sh=piv(s*.27,.5,0,tor);sh.add(lbox(.11,.29,.12,uni));const el=piv(0,-.29,0,sh);el.add(lbox(.1,.27,.11,uni));const hd=new THREE.Mesh(new THREE.SphereGeometry(.045,6,5),mat(skin));at(hd,0,-.3,0,el);arms[s<0?'L':'R']={sh,el}}
   let rifle=null,binos=null;
@@ -708,6 +935,13 @@ class Unit{
 
 // ======================= GAME STATE =======================
 let units=[],officer,eSniper,playerMesh,spotterMesh;
+const OBJ=M.obj;let objKills=0;
+const cap1=t=>t.charAt(0).toUpperCase()+t.slice(1);
+function objLabel(){return OBJ.type==='officer'?`Eliminate the ${/^(Soviet|German|Romanian|Japanese|SS) /.test(M.officerName)?M.officerName:M.officerName[0].toLowerCase()+M.officerName.slice(1)}`:OBJ.type==='duel'?(MI===8?'Kill Major König, the German sniper':'Find and kill the enemy sniper'):`${OBJ.label} (${objKills}/${OBJ.n})`}
+function setObjText(){$('#o2 span').textContent=objLabel()}
+// where the job is: the officer's post, the duel ground, or the targets
+function refPt(){if(OBJ.type==='officer')return OP;if(OBJ.type==='duel'){let x=0,z=0;M.duel.forEach(p=>{x+=p.x;z+=p.z});return{x:x/M.duel.length,z:z/M.duel.length}}
+  const t=units.filter(u=>u.alive&&OBJ.names.includes(u.name));if(!t.length)return OP;let x=0,z=0;t.forEach(u=>{x+=u.x;z+=u.z});return{x:x/t.length,z:z/t.length}}
 let mode='brief',difficulty='recruit',T=0,missionT=0,gameType='mission';
 const player={x:0,z:338,bearing:0,stance:'stand',moving:false,sprint:false,target:null,heart:72,spd:0};
 let camH=62,camHT=62,overview=false;
@@ -724,7 +958,7 @@ function spawnEnemies(){
   units.forEach(u=>u.remove());units=[];
   const tY=(x,z)=>hAt(x,-229.5)-0.55-hAt(x,z);
   const add=(k,x,z,o)=>{const u=new Unit(k,x,z,o);units.push(u);return u};
-  officer=add('officer',28,-257.6,{name:'Battalion officer',points:500,bearing:180,ai:{type:'officer',state:'atOP',t:R(22,32)}});
+  officer=add('officer',OPP.x,OPP.z,{name:M.officerName,points:500,bearing:180,ai:{type:'officer',state:'atOP',t:R(22,32)}});
   add('radio',-6,-327,{name:'Signaller',points:200,pose:'crouch',bearing:160,ai:{type:'idle',t:6}});
   add('rifle',-60,-232.5,{name:'MG gunner',points:150,trench:true,yOff:tY(-60,-232.5),bearing:180});
   add('rifle',-58.7,-232.9,{name:'MG loader',points:150,trench:true,yOff:tY(-58.7,-232.9),bearing:195});
@@ -734,7 +968,18 @@ function spawnEnemies(){
   add('rifle',72,-232.5,{name:'Rifleman',points:100,trench:true,yOff:tY(72,-232.5),bearing:185});
   add('rifle',LP.x,LP.z,{name:'Listening-post sentry',points:100,watch:{fov:70,range:165,sweep:48,speed:.28,eye:1.6}});
   const floorY=facBase+0.3+3.6;
-  eSniper=add('sniper',FAC.x+3,FAC.z+12-1.1,{name:'Enemy sniper',points:300,pose:'crouch',yOff:floorY-hAt(FAC.x+3,FAC.z+10.9),bearing:185,ai:{type:'sniper',glint:R(4,9)}});
+  if(OBJ.type==='duel'){const sp=M.duel[0];eSniper=add('sniper',sp.x,sp.z,{name:MI===8?'Major König':'Enemy sniper',points:500,pose:'prone',bearing:180,ai:{type:'sniper',duel:true,spot:0,glint:R(4,8),moveT:0,peekT:0}})}
+  else eSniper=add('sniper',FAC.x+3,FAC.z+FAC.d/2-1.1,{name:'Enemy sniper',points:300,pose:'crouch',yOff:floorY-hAt(FAC.x+3,FAC.z+FAC.d/2-1.1),bearing:185,ai:{type:'sniper',glint:R(4,9)}});
+  // mission targets
+  if(MI===2)for(const dx of[-3.2,3.2])add('officer',OPP.x+dx,OPP.z+.6,{name:'Observer',points:300,bearing:180,ai:{type:'observe'}});
+  if(MI===5)add('officer',OPP.x+3.2,OPP.z+.6,{name:'Artillery observer',points:400,bearing:180,ai:{type:'observe'}});
+  if(M.well)for(let i=0;i<3;i++){const hx=-112-i*3,hz=-270;add('rifle',hx,hz,{name:'Water carrier',points:150,bearing:90,ai:{type:'carrier',state:'wait',t:R(3,8)+i*14,hx,hz}})}
+  if(M.treeSnipers)for(const t of TREE_SN)add('sniper',t.x,t.z,{name:'Tree sniper',points:300,pose:'crouch',yOff:t.h,bearing:180,ai:{type:'sniper',glint:R(2,7)}});
+  if(M.guns){GUNS.forEach(g=>add('rifle',g.x+1.6,g.z+1.2,{name:'Gun crew',points:150,pose:'crouch',bearing:200,ai:{type:'idle',t:5}}));
+    const T0=TRACTORS[0],T1=TRACTORS[1];add('rifle',T0.x+2,T0.z,{name:'Tractor driver',points:150,ai:{type:'patrol',path:[[T0.x+2,T0.z],[GUNS[0].x,GUNS[0].z+3],[T1.x-2,T1.z],[GUNS[1].x,GUNS[1].z+3]],i:1,speed:1.2,noSearch:true}});
+    add('rifle',T1.x-2.2,T1.z+1,{name:'Tractor driver',points:150,bearing:250,ai:{type:'idle',t:6}})}
+  if(MI===17)for(const x of[-150,20,120])add('rifle',x,-232.5,{name:'Defender',points:150,trench:true,yOff:tY(x,-232.5),bearing:180});
+  if(M.officers2)add('officer',-40,-247,{name:M.officerName,points:500,bearing:180,ai:{type:'observe'}});
   const pA=[[-230,-30],[-90,-12],[-40,62],[-165,88],[-250,40]],pB=[[60,-25],[215,5],[245,100],[110,96],[40,40]];
   for(const path of[pA,pB]){const L=add('rifle',path[0][0],path[0][1],{name:'Patrol leader',points:100,watch:{fov:84,range:78,sweep:22,speed:.7,eye:1.6},ai:{type:'patrol',path,i:1,speed:1.25}});
     add('rifle',path[0][0],path[0][1]+3,{name:'Patrol rifleman',points:100,watch:{fov:84,range:70,sweep:30,speed:.55,eye:1.6},ai:{type:'follow',leader:L}})}
@@ -747,11 +992,11 @@ function resetMission(){
   if(!playerMesh){playerMesh=makeSoldier('player');spotterMesh=makeSoldier('spotter');scene.add(playerMesh,spotterMesh)}
   Object.assign(player,{x:R(-40,40),z:349,bearing:0,stance:'stand',moving:false,sprint:false,target:null,heart:72});
   Object.assign(stats,{shots:0,hits:0,kills:[],hideScores:[],score:0,head:0});
-  alertLevel=0;officerDead=false;gameOver=false;compromised.length=0;missionT=0;
+  alertLevel=0;officerDead=false;gameOver=false;compromised.length=0;missionT=0;objKills=0;
   bullets.forEach(b=>scene.remove(b.line));bullets=[];fx.forEach(f=>{scene.remove(f.s)});fx=[];
-  Object.assign(wind,{fixed:false,var:28,mvar:4,int:[18,34]});wind.baseFrom=rnd()<.5?R(55,125):R(235,305);wind.baseMph=R(4,12);wind.from=wind.tFrom=wind.baseFrom;wind.mph=wind.tMph=wind.baseMph;wind.next=R(15,30);
+  Object.assign(wind,{fixed:false,var:28,mvar:4,int:[18,34]});wind.baseFrom=rnd()<.5?R(55,125):R(235,305);wind.baseMph=R(M.wind[0],M.wind[1]);wind.from=wind.tFrom=wind.baseFrom;wind.mph=wind.tMph=wind.baseMph;wind.next=R(15,30);
   arty={next:R(18,30),booms:0,nextBoom:0,maskT:0};
-  Object.assign(snipe,{hide:null,view:'binos',drum:RIF.el.def,windMil:0,rounds:RIF.cap,reserve:20,boltT:0,reloadT:0,breath:1,holding:false,shakeT:0,recoil:0,exposure:0,compT:-1,log:[],glint:false,sniperWarned:false});
+  Object.assign(snipe,{hide:null,view:'binos',drum:RIF.el.def,windMil:0,rounds:RIF.cap,reserve:20,boltT:0,reloadT:0,breath:1,holding:false,shakeT:0,recoil:0,exposure:0,compT:-1,log:[],glint:false,sniperWarned:false,decoys:M.decoys||1,decoyT:0});
   setTufts(null);setBushes(null);
   ['o1','o2','o3'].forEach(id=>$('#'+id).classList.remove('done'));
 }
@@ -777,6 +1022,9 @@ const RIFLES={
   k98:{name:'Kar98k',scope:'ZF39',power:'4×',side:'German, captured',cal:'7.92×57 s.S. heavy ball, 12.8 g',mv:760,kd:.00061,sh:.07,cap:5,cycle:1.5,reload:3.2,auto:false,moa:1.3,fov:7,ret:'zf',movingPost:true,
     el:{kind:'m',min:1,max:8,step:100,def:3,lab:'Range drum'},wd:null,load:'Loading stripper clip…',
     blurb:'Captured German rifle. The heavy boat-tail bullet keeps its speed and drifts less. The ZF39 drum (100–800 m) moves the post down instead of the image, and there is no windage turret: hold off into the wind.'},
+  m28:{name:'M/28-30',scope:'iron sights',power:'1×',side:'Finnish',cal:'7.62×53R D166 heavy ball, 13 g',mv:730,kd:.00063,sh:.035,cap:5,cycle:1.6,reload:3.2,auto:false,moa:2,fov:14,ret:'iron',
+    el:{kind:'m',min:1,max:20,step:100,def:2,lab:'Rear sight'},wd:null,load:'Loading stripper clip…',
+    blurb:'Finnish Civil Guard Mosin with a heavy barrel and open sights: no scope to raise your head, fog in the cold or glint in the sun. Rear sight in hundreds of metres; no windage, so hold off into the wind.'},
   enfield:{name:'No.4 Mk I (T)',scope:'No.32',power:'3×',side:'British',cal:'.303 Mk VII ball, 11.3 g',mv:744,kd:.00082,sh:.065,cap:10,cycle:1.1,reload:5,auto:false,moa:1.5,fov:8,ret:'no32',
     el:{kind:'yd',min:2,max:20,step:50,def:6,lab:'Range drum'},wd:{unit:'moa',click:2,max:16},load:'Loading two chargers…',
     blurb:'British sniper rifle with a fast, smooth bolt and 10 rounds. The No.32 range drum reads yards (100–1,000 in 50-yard clicks) and the deflection drum moves 2 minutes per click.'},
@@ -878,7 +1126,7 @@ function updateArty(dt){
   if(arty.booms>0&&T>arty.nextBoom){arty.booms--;arty.nextBoom=T+R(.6,1.2);arty.maskT=2.0;sfx.boom(R(.35,.7));
     const a=R(-50,50)*DEG,d=R(700,1100);glintAt(new V3(Math.sin(a)*d,R(2,10),-Math.cos(a)*d-250),R(20,40));if(mode==='snipe')shake=0.25}
   updateMG();
-  if(T>arty.next){arty.next=T+R(26,44);arty.booms=Math.round(R(4,7));arty.nextBoom=T;if(mode==='snipe')say('Our artillery is firing. The report of your shot will be masked.','arty')}
+  if(T>arty.next){arty.next=T+R(...(M.arty||[26,44]));arty.booms=Math.round(R(4,7));arty.nextBoom=T;if(mode==='snipe')say('Our artillery is firing. The report of your shot will be masked.','arty')}
 }
 let shake=0;
 // German MG34 firing occasional bursts toward our lines: muzzle flashes and a distant rattle
@@ -889,9 +1137,9 @@ function updateMG(){const g=units.find(u=>u.name==='MG gunner');
     const d=Math.hypot(player.x+60,player.z+230);noise(.05,'bandpass',700,Math.min(.35,60/d),.0,1.2)}}
 
 // ======================= AI =======================
-function unitState(u){if(u.pose==='prone')return u.speed>.05?'crawl':'prone';if(u.pose==='crouch')return u.speed>.05?'crouchWalk':u.kind==='radio'?'radio':u.kind==='sniper'?'kneelAim':'crouch';if(u.speed>2.2)return'run';if(u.speed>.05)return'walk';if(u===officer&&officer.ai.state==='atOP')return'binos';if(u.trench)return'trench';return'idle'}
+function unitState(u){if(u.pose==='prone')return u.speed>.05?'crawl':'prone';if(u.pose==='crouch')return u.speed>.05?'crouchWalk':u.kind==='radio'?'radio':u.kind==='sniper'?'kneelAim':'crouch';if(u.speed>2.2)return'run';if(u.speed>.05)return'walk';if(u===officer&&officer.ai.state==='atOP'||u.ai.type==='observe')return'binos';if(u.trench)return'trench';return'idle'}
 function moveTo(u,tx,tz,spd,dt){const dx=tx-u.x,dz=tz-u.z,d=Math.hypot(dx,dz);if(d<0.15)return true;const s=Math.min(d,spd*dt);u.x+=dx/d*s;u.z+=dz/d*s;u.bearing=bearingOf(dx,dz);u.speed=spd;return d<0.3}
-const OP={x:28,z:-257.6},MID={x:6,z:-298},DOOR={x:HQ.x,z:HQ.z+HQ.d/2+1.2},INSIDE={x:HQ.x,z:HQ.z-2};
+const OP=OPP,MID=M.op?{x:(OPP.x+HQ.x)/2,z:Math.min(OPP.z,HQ.z)+6}:{x:6,z:-298},DOOR={x:HQ.x,z:HQ.z+HQ.d/2+1.2},INSIDE={x:HQ.x,z:HQ.z-2};
 function officerFlee(dur=45){if(gameType==='tutorial')return;const a=officer.ai;if(!officer.alive||a.state==='inHQ')return;a.state='toHQ';a.path=[MID,DOOR,INSIDE];if(a.state==='toHQ'&&officer.z<MID.z)a.path=[DOOR,INSIDE];a.pi=0;a.flee=true;a.hqT=dur}
 function updateAI(dt){
   for(const u of units){
@@ -908,7 +1156,18 @@ function updateAI(dt){
       else{const p=a.path[a.i];if(moveTo(u,p[0],p[1],a.speed,dt))a.i=(a.i+1)%a.path.length}
     }else if(a.type==='follow'){const L=a.leader;if(L.alive){const lb=L.bearing*DEG,tx=L.x-Math.sin(lb)*3.2,tz=L.z+Math.cos(lb)*3.2;if(u.det>0.3)u.bearing=bearingOf(player.x-u.x,player.z-u.z);else if(Math.hypot(tx-u.x,tz-u.z)>0.8)moveTo(u,tx,tz,Math.max(1.3,L.speed*1.25),dt)}else{u.bearing=bearingOf(player.x-u.x,player.z-u.z);u.setPose('crouch');u.basePose='crouch'}}
     else if(a.type==='idle'){a.t=(a.t??5)-dt;if(a.t<0){a.t=R(4,10);u.bearing=R(130,230)}}
-    else if(a.type==='sniper'){a.glint-=dt;if(a.glint<0){a.glint=alertLevel>0?R(2.5,5):R(6,11);if(u.duckT<=0)glintAt(new V3(u.x+.1,u.eyeY()-.05,u.z+.45),1.4)}}
+    else if(a.type==='carrier'){
+      if(a.state==='wait'){u.bearing=90;a.t-=dt;if(a.t<0)a.state='go'}
+      else if(a.state==='go'){if(moveTo(u,WELL.x-1.6,WELL.z+1.6,3.3,dt)){a.state='fill';a.t=R(4,7)}}
+      else if(a.state==='fill'){u.bearing=60;a.t-=dt;if(a.t<0)a.state='back'}
+      else if(a.state==='back'&&moveTo(u,a.hx,a.hz,3.0,dt)){a.state='wait';a.t=R(16,30)}}
+    else if(a.type==='sniper'){
+      if(a.duel){// the duel sniper shifts between his hides after a near miss and looks up after firing at a decoy
+        if(a.moveT>0){a.moveT-=dt;if(a.moveT<=0){let k=a.spot;while(k===a.spot)k=(rnd()*M.duel.length)|0;a.spot=k;u.x=M.duel[k].x;u.z=M.duel[k].z;u.det=0}}
+        if(a.peekT>0){a.peekT-=dt;u.setPose(a.peekT>0?'crouch':'prone')}}
+      // a lens glints when the sun shines into it, i.e. when the sun is behind the man he is watching
+      const sunOn=Math.abs(angDiff(SUN_AZ,180))<70;
+      a.glint-=dt;if(a.glint<0){a.glint=(alertLevel>0||a.duel?R(2.5,5):R(6,11))*(sunOn?.5:1);if(u.duckT<=0&&a.moveT<=0)glintAt(new V3(u.x+.1,u.eyeY()-.05,u.z+.45),sunOn?1.9:1.4)}}
     // watch cone
     if(u.watch){const w=u.watch;const base=(a.type==='patrol'||a.type==='follow')?u.bearing:180;
       u.lookB=u.det>0.3?bearingOf(player.x-u.x,player.z-u.z):base+w.sweep*Math.sin(T*w.speed+w.phase);
@@ -924,7 +1183,8 @@ const STANCE_F={stand:1,crouch:.6,prone:.3};
 const COVER_F={open:{stand:1,crouch:1,prone:1},grass:{stand:.85,crouch:.5,prone:.28},bush:{stand:.6,crouch:.32,prone:.18},crater:{stand:1,crouch:.6,prone:.25},rubble:{stand:.8,crouch:.5,prone:.35}};
 function onCrest(x,z){return Math.abs(z-ridgeZ(x))<9&&hAt(x,z)>3.1}
 function playerVis(){
-  const st=mode==='snipe'?'prone':player.stance,cov=coverAt(player.x,player.z);
+  const st=mode==='snipe'?'prone':player.stance;let cov=coverAt(player.x,player.z);
+  if(TH.snow&&M.side==='fin'&&cov==='open'&&st==='prone')cov='bush';// white snowsuit on snow
   let m;if(mode==='snipe')m=snipe.shotFlash>0?1.3:0.35;else if(!player.moving)m=0.35;else m=player.sprint?1.5:st==='prone'?0.6:st==='crouch'?0.85:1.0;
   const sky=st!=='prone'&&onCrest(player.x,player.z)?1.5:1;
   return STANCE_F[st]*COVER_F[cov][st]*m*sky;
@@ -947,18 +1207,22 @@ function updateDetection(dt){
 }
 
 // ======================= HIDE ASSESSMENT =======================
-function targetPoints(){const pts=[{n:'the officer’s observation post',w:3,p:new V3(OP.x,hAt(OP.x,OP.z)+1.45,OP.z)},{n:'the officer’s route',w:1,p:new V3(MID.x,hAt(MID.x,MID.z)+1.3,MID.z)},{n:'the HQ door',w:1,p:new V3(DOOR.x,hAt(DOOR.x,DOOR.z)+1.3,DOOR.z)}];
-  units.forEach(u=>{if(u.alive&&['MG gunner','Signaller','Trench sentry','Enemy sniper'].includes(u.name))pts.push({n:u.name.toLowerCase(),w:1,p:u.chest().add(new V3(0,.35,0))})});return pts}
+function targetPoints(){const pts=[];
+  if(OBJ.type==='officer')pts.push({n:'the officer’s observation post',w:3,p:new V3(OP.x,hAt(OP.x,OP.z)+1.45,OP.z)},{n:'the officer’s route',w:1,p:new V3(MID.x,hAt(MID.x,MID.z)+1.3,MID.z)},{n:'the HQ door',w:1,p:new V3(DOOR.x,hAt(DOOR.x,DOOR.z)+1.3,DOOR.z)});
+  else if(OBJ.type==='duel')M.duel.forEach((d,i)=>{if(i&&d.x===M.duel[0].x&&d.z===M.duel[0].z)return;pts.push({n:i?'another place he could be':'the ground he is watching from',w:i?1:3,p:new V3(d.x,hAt(d.x,d.z)+.4,d.z)})});
+  else{const seen=new Set();units.forEach(u=>{if(u.alive&&OBJ.names.includes(u.name)&&!seen.has(u.name)){seen.add(u.name);pts.push({n:u.name.toLowerCase(),w:3,p:u.chest().add(new V3(0,.35,0))})}});if(M.well)pts.push({n:'the well',w:2,p:new V3(WELL.x,hAt(WELL.x,WELL.z)+1.2,WELL.z)})}
+  if(!pts.length)pts.push({n:'the enemy line',w:1,p:new V3(0,hAt(0,-232)+1,-232)});
+  units.forEach(u=>{if(u.alive&&['MG gunner','Signaller','Trench sentry','Enemy sniper'].includes(u.name)&&!(OBJ.names||[]).includes(u.name)&&!(OBJ.type==='duel'&&u===eSniper))pts.push({n:u.name.toLowerCase(),w:1,p:u.chest().add(new V3(0,.35,0))})});return pts}
 function assessHide(x,z){
   const eye=new V3(x,hAt(x,z)+0.45,z),cov=coverAt(x,z),lines=[];let score=0;
   const pts=targetPoints();let wsum=0,wv=0;const seen=[],blind=[];
   for(const t of pts){wsum+=t.w;if(los(eye,t.p,true,2.5)){wv+=t.w;seen.push(t.n)}else blind.push(t.n)}
   const fof=wv/wsum,opVis=seen.includes(pts[0].n);
-  lines.push({ok:fof>.6?'y':fof>.25?'h':'n',t:'Field of fire',d:seen.length?`You can see ${seen.slice(0,4).join(', ')}${seen.length>4?' and more':''}.${opVis?'':' The officer’s post is hidden from here.'}`:'Nothing. Ground or cover blocks every target from a prone position.',s:Math.round(fof*35)});score+=fof*35;
+  lines.push({ok:fof>.6?'y':fof>.25?'h':'n',t:'Field of fire',d:seen.length?`You can see ${seen.slice(0,4).join(', ')}${seen.length>4?' and more':''}.${opVis?'':` ${cap1(pts[0].n)} is hidden from here.`}`:'Nothing. Ground or cover blocks every target from a prone position.',s:Math.round(fof*35)});score+=fof*35;
   const cv={bush:1,grass:.85,crater:.8,rubble:.75,open:.15}[cov];
   lines.push({ok:cv>.7?'y':cv>.4?'h':'n',t:'Concealment',d:{bush:'Inside a bush. Your outline is broken up completely.',grass:'Tall grass hides you while prone. Part only a narrow lane to shoot through.',crater:'A shell crater keeps your profile low.',rubble:'Rubble and shadow hide you, though ruins attract attention.',open:'Open ground. Nothing breaks up your shape.'}[cov],s:Math.round(cv*20)});score+=cv*20;
-  const rOP=Math.hypot(OP.x-x,OP.z-z);let rs=rOP<200?.2:rOP<250?.6:rOP<=560?1:rOP<=700?.6:.25;
-  lines.push({ok:rs>.9?'y':rs>.5?'h':'n',t:`Range ${Math.round(rOP/10)*10} m`,d:rOP<250?'Close. They will hear the shot and see the muzzle blast.':rOP>560?'Far for a 3.5× scope. Wind and range errors grow quickly.':'Good distance: close enough to hit, far enough to stay unseen.',s:Math.round(rs*15)});score+=rs*15;
+  const RF=refPt(),RB=M.rangeBest||[250,560],rOP=Math.hypot(RF.x-x,RF.z-z);let rs=rOP<RB[0]-50?.2:rOP<RB[0]?.6:rOP<=RB[1]?1:rOP<=RB[1]+140?.6:.25;
+  lines.push({ok:rs>.9?'y':rs>.5?'h':'n',t:`Range ${Math.round(rOP/10)*10} m`,d:rOP<RB[0]?'Close. They will hear the shot and see the muzzle blast.':rOP>RB[1]?`Far for the ${RIF.scope} ${RIF.power}. Wind and range errors grow quickly.`:'Good distance: close enough to hit, far enough to stay unseen.',s:Math.round(rs*15)});score+=rs*15;
   let lm=null;for(const l of landmarks){if(Math.hypot(l.x-x,l.z-z)<l.r)lm=l}
   const ls=lm?(lm.w>=1?0:.4):1;
   lines.push({ok:lm?'n':'y',t:'Landmarks',d:lm?`Next to ${lm.name}. Enemy observers and mortar crews watch obvious features first.`:'No obvious landmark nearby. Good.',s:Math.round(ls*10)});score+=ls*10;
@@ -966,7 +1230,7 @@ function assessHide(x,z){
   lines.push({ok:crest?'n':'y',t:'Skyline',d:crest?'On the crest. Even prone your head and rifle stand against the sky.':forward?'Forward slope below the crest (the military crest). Ideal.':'Not silhouetted.',s:crest?0:10});score+=crest?0:10;
   let covered=0;for(const rr of[8,16,24])for(const b of[150,180,210,165,195]){const px=x+Math.sin(b*DEG)*rr,pz=z-Math.cos(b*DEG)*rr;if(coverAt(px,pz)!=='open'||hAt(px,pz)<hAt(x,z)-1.2)covered++}
   const es=clamp(covered/5,0,1);lines.push({ok:es>.6?'y':es>.2?'h':'n',t:'Withdrawal route',d:es>.6?'Cover behind you for a covered withdrawal.':es>.2?'Some cover behind you.':'Open ground behind you. Leaving will be dangerous.',s:Math.round(es*5)});score+=es*5;
-  const sunD=Math.abs(angDiff(bearingOf(OP.x-x,OP.z-z),SUN_AZ));lines.push({ok:sunD<30?'n':'y',t:'Sun',d:sunD<30?'You would look into the low morning sun. Your scope lens will glint.':'Sun is off your line of sight. No lens glint.',s:sunD<30?0:5});score+=sunD<30?0:5;
+  const sunD=Math.abs(angDiff(bearingOf(RF.x-x,RF.z-z),SUN_AZ));lines.push({ok:sunD<30&&RIF.ret!=='iron'?'n':'y',t:'Sun',d:sunD<30?(RIF.ret==='iron'?'You look toward the sun, but iron sights have no lens to glint.':'You would look into the sun. Your scope lens will glint.'):'Sun is off your line of sight. No lens glint.',s:sunD<30&&RIF.ret!=='iron'?0:5});score+=sunD<30&&RIF.ret!=='iron'?0:5;
   const comp=compromised.some(c=>Math.hypot(c.x-x,c.z-z)<40);
   if(comp){lines.push({ok:'n',t:'Known position',d:'The enemy already located this area. Expect mortars quickly.',s:-30});score-=30}
   return{score:Math.round(clamp(score,0,100)),lines,canFire:seen.length>0,comp,cov}
@@ -988,8 +1252,8 @@ function occupyHide(){
   fade(()=>{
     mode='snipe';snipe.hide=h;snipe.q=h.score/100;stats.hideScores.push(h.score);
     const prev=compromised.find(c=>Math.hypot(c.x-h.x,c.z-h.z)<40);snipe.exposure=prev?60:0;snipe.compT=-1;
-    snipe.baseYaw=bearingOf(OP.x-h.x,OP.z-h.z);snipe.yaw=snipe.baseYaw;snipe.pitch=0;snipe.view='binos';snipe.log=[];
-    const eye=hAt(h.x,h.z)+0.45,tp=hAt(OP.x,OP.z)+1.4;snipe.pitch=Math.atan2(tp-eye,Math.hypot(OP.x-h.x,OP.z-h.z));
+    const RF=refPt();snipe.baseYaw=bearingOf(RF.x-h.x,RF.z-h.z);snipe.yaw=snipe.baseYaw;snipe.pitch=0;snipe.view='binos';snipe.log=[];
+    const eye=hAt(h.x,h.z)+0.45,tp=hAt(RF.x,RF.z)+1.4;snipe.pitch=Math.atan2(tp-eye,Math.hypot(RF.x-h.x,RF.z-h.z));
     setTufts({x:h.x,z:h.z,b:snipe.baseYaw});setBushes({x:h.x,z:h.z});
     playerMesh.visible=false;spotterMesh.visible=false;
     say(h.score>=70?'Good spot. I’ll watch the flanks. Glass the trench first.':'Not the best spot, but it will do. Glass the trench first.');
@@ -1026,7 +1290,7 @@ function targetUnderAim(maxMil){const e=eyePos(),dir=sightDir();let best=null,bm
   for(const u of units){if(!u.alive||!u.visible)continue;const c=u.chest();const v=c.clone().sub(e);const d=v.length();const ang=Math.acos(clamp(v.dot(dir)/d,-1,1))*1000;if(ang<bm&&los(e,c.clone().add(new V3(0,.3,0)),true,2.5)){bm=ang;best={u,d}}}
   return best}
 function say(text,tag){snipe.log.unshift({text,tag,t:T});if(snipe.log.length>5)snipe.log.pop();renderLog()}
-function renderLog(){$('#log').innerHTML=snipe.log.map(l=>`<div><em>Orlov:</em> ${l.text}</div>`).join('')}
+function renderLog(){$('#log').innerHTML=snipe.log.map(l=>`<div><em>${gameType==='tutorial'?'Orlov':SPOTN}:</em> ${l.text}</div>`).join('')}
 let toastT=0;function toast(t){const p=$('#prompt');p.hidden=false;p.textContent=t;toastT=T+4.5}
 function fire(){
   if(mode!=='snipe'||gameOver)return;
@@ -1084,6 +1348,7 @@ function impact(b,r){
   // reactions near impact
   for(const u of units){if(!u.alive||(gameType==='tutorial'&&u===officer))continue;const d=Math.hypot(u.x-r.p.x,u.z-r.p.z);if(d<25){u.duckT=R(10,18)}}
   if(officer.alive&&Math.hypot(officer.x-r.p.x,officer.z-r.p.z)<14)officerFlee(50);
+  if(OBJ.type==='duel'&&eSniper.alive&&Math.hypot(eSniper.x-r.p.x,eSniper.z-r.p.z)<8&&eSniper.ai.moveT<=0){eSniper.ai.moveT=R(2,4);eSniper.ai.peekT=0;eSniper.setPose('prone');say('Missed, and he knows it. He will crawl to another hide. Watch for the glint.')}
   // spotter call
   const it=b.intended;
   if(it&&it.u){const tc=it.u.chest().add(new V3(0,it.u.pose==='stand'?0.15:0.1,0));const dist=tc.distanceTo(e);
@@ -1104,9 +1369,12 @@ function kill(u,part,p){
   puff(p,0x5a2a22,0.6,0.6,0.2);puff(p.clone().add(new V3(0,0,-.5)),0x7a6a4c,1.2,1,0.3);
   if(u.watch){u.cone.visible=false;u.mark.visible=false}
   for(const o of units){if(!o.alive||(gameType==='tutorial'&&o===officer))continue;if(Math.hypot(o.x-u.x,o.z-u.z)<60)o.duckT=R(14,24)}
-  if(u===officer){officerDead=true;$('#o2').classList.add('done');say('The officer is down! That’s the one we came for. Now we get out of here (X).');stats.score+=200}
-  else{say(`${part==='head'?'Head shot.':'Hit.'} ${u.name} down.`);if(officer.alive&&Math.hypot(officer.x-u.x,officer.z-u.z)<120)officerFlee(R(35,55))}
-  if(u===eSniper)say('Their sniper is finished. One less pair of eyes on us.');
+  const isObj=OBJ.type==='officer'?u===officer:OBJ.type==='duel'?u===eSniper:OBJ.names.includes(u.name);
+  if(isObj&&OBJ.type==='count'){objKills++;setObjText()}
+  if(isObj&&!officerDead&&(OBJ.type!=='count'||objKills>=OBJ.n)){officerDead=true;$('#o2').classList.add('done');stats.score+=200;
+    say(OBJ.type==='officer'?`The ${u.name.toLowerCase()} is down! That’s the one we came for. Now we get out of here (X).`:OBJ.type==='duel'?`${u.name} is finished! Now we get out of here (X).`:`That’s ${OBJ.n}. The job is done. Now we get out of here (X).`)}
+  else{say(`${part==='head'?'Head shot.':'Hit.'} ${u.name} down.${isObj&&OBJ.type==='count'?` That’s ${objKills} of ${OBJ.n}.`:''}`);if(u!==officer&&officer.alive&&Math.hypot(officer.x-u.x,officer.z-u.z)<120)officerFlee(R(35,55))}
+  if(u===eSniper&&OBJ.type!=='duel')say('Their sniper is finished. One less pair of eyes on us.');
 }
 function askSpotter(){if(mode!=='snipe')return;
   if(difficulty==='veteran'){say('You are on your own, comrade. Range it with the mil scale.');return}
@@ -1139,26 +1407,42 @@ function updateSnipe(dt){
   if(snipe.boltT>0){snipe.boltT-=dt;if(snipe.boltT<=0&&snipe.rounds===0&&snipe.reserve>0){snipe.reloadT=RIF.reload;sfx.click()}}
   if(snipe.reloadT>0){snipe.reloadT-=dt;if(snipe.reloadT<=0){const n=Math.min(RIF.cap,snipe.reserve);snipe.rounds=n;snipe.reserve-=n;sfx.click()}}
   // exposure sources
-  const {yaw}=aimDir();snipe.glint=snipe.view==='scope'&&Math.abs(angDiff(yaw/DEG,SUN_AZ))<30;
+  const {yaw}=aimDir();snipe.glint=snipe.view==='scope'&&RIF.ret!=='iron'&&Math.abs(angDiff(yaw/DEG,SUN_AZ))<30;
   let dE=-1.1;if(snipe.glint)dE+=4;
-  const sniperHunting=eSniper.alive&&stats.shots>0&&eSniper.duckT<=0&&los(new V3(eSniper.x,eSniper.eyeY(),eSniper.z),eyePos(),true,2.5);
+  // any enemy sniper with a line of sight hunts you once you have fired; a duel sniper hunts from the start
+  let hunter=null;for(const u of units){if(u.kind!=='sniper'||!u.alive||u.duckT>0||(u.ai.moveT||0)>0||!(stats.shots>0||u.ai.duel))continue;
+    if(Math.hypot(u.x-snipe.hide.x,u.z-snipe.hide.z)<900&&los(new V3(u.x,u.eyeY(),u.z),eyePos(),true,2.5)){hunter=u;break}}
+  const sniperHunting=!!hunter;
+  if(snipe.decoyT>0){snipe.decoyT-=dt;if(snipe.decoyT<=0)decoyFire()}
   if(sniperHunting)dE+=2.4*(1.3-snipe.q);
   snipe.hunting=sniperHunting;
   if(gameType==='range'){snipe.hunting=false;snipe.glint=false;return}
   if(gameType==='tutorial'){snipe.hunting=false;snipe.exposure=clamp(snipe.exposure+(dE-(sniperHunting?2.4*(1.3-snipe.q):0))*dt,0,90)}
   else if(snipe.compT<0){snipe.exposure=clamp(snipe.exposure+dE*dt,0,100);
-    if(snipe.exposure>72&&eSniper.alive&&sniperHunting&&!snipe.sniperWarned){snipe.sniperWarned=true;sfx.crack();shake=.2;say('Crack! Enemy sniper round just over us. He is in the factory windows.')}
+    if(snipe.exposure>72&&sniperHunting&&!snipe.sniperWarned){snipe.sniperWarned=true;sfx.crack();shake=.2;say(`Crack! Sniper round just over us. He is in ${hunter.name==='Tree sniper'?'the palm crowns':hunter===eSniper?(M.sniperWhere||FACK.n):'front of us'}.`)}
+    if(snipe.exposure>=100&&OBJ.type==='duel'&&sniperHunting){sfx.crack();endGame(false,`Shot by ${hunter.name}`,`${hunter.name} saw you first and fired. ${SPOT} dragged you back, but the duel was lost.`,'In a duel the other sniper is looking for you too. Fire from good cover, use the helmet decoy (G) to make him show himself, and move after a miss.');return}
     if(snipe.exposure>=100){snipe.compT=10;snipe.nextMortar=T+1.2;say('Mortars! They have found us. Leave the hide now (X)!');sfx.mortar()}}
   else{snipe.compT-=dt;if(T>snipe.nextMortar){snipe.nextMortar=T+R(1,1.8);const h=snipe.hide,k=snipe.compT/10;const r=8+k*40,a=R(0,6.28);const p=new V3(h.x+Math.cos(a)*r,0,h.z+Math.sin(a)*r);p.y=hAt(p.x,p.z)+.5;sfx.mortar();setTimeout(()=>{puff(p,0x3d362b,9,3,2);puff(p,0x6a5d48,5,2,3);shake=.5},950)}
     if(snipe.compT<=0){killedByMortar();return}}
   // patrol warnings
   for(const u of units){if(u.alive&&u.watch&&(u.ai.type==='patrol'||u.ai.type==='follow')){const d=Math.hypot(u.x-snipe.hide.x,u.z-snipe.hide.z);if(d<95&&T-snipe.lastWarn>9){snipe.lastWarn=T;say(`Patrol at ${clockOf(bearingOf(u.x-snipe.hide.x,u.z-snipe.hide.z),snipe.yaw)} o’clock, ${Math.round(d/5)*5} m. ${u.det>0.2?'They are looking this way. Don’t move!':'Stay still.'}`)}}}
 }
-function killedByMortar(){endGame(false,'Killed by mortar fire','The enemy located your hide and mortared it. You stayed too long.','Shoot and move. After one or two shots, or when Orlov shouts “mortars”, leave the hide with X and crawl away under cover.')}
+// helmet decoy: the spotter raises a helmet beside the hide; an enemy sniper who can see it fires and gives himself away
+function decoy(){if(mode!=='snipe'||gameOver||gameType!=='mission')return;if(snipe.decoyT>0)return;
+  if(snipe.decoys<=0){say('No more helmets to spare.');return}snipe.decoys--;snipe.decoyT=R(2.5,4.5);sfx.click();
+  say(`I’m raising the helmet on a stick to your right. Watch for his flash. (${snipe.decoys} left)`)}
+function decoyFire(){const h=snipe.hide,b=snipe.baseYaw*DEG,dp=new V3(h.x+Math.cos(b)*4,0,h.z+Math.sin(b)*4);dp.y=hAt(dp.x,dp.z)+.6;
+  let sh=null,bd=1e9;for(const u of units){if(u.kind!=='sniper'||!u.alive||u.duckT>0)continue;const d=Math.hypot(u.x-dp.x,u.z-dp.z);if(d<900&&d<bd&&los(new V3(u.x,u.eyeY(),u.z),dp,true,2.5)){sh=u;bd=d}}
+  if(!sh){say('Nothing. Nobody fired at the helmet: their sniper cannot see it from where he is.');return}
+  const mz=new V3(sh.x,sh.eyeY()-.05,sh.z+.5);glintAt(mz,4,0xffc070,.35);puff(mz,0x9a8a6a,2.4,1.6,.4);
+  setTimeout(()=>{sfx.crack();puff(dp,0x8a7a5a,1.2,.8,.6);shake=.15;
+    say(`He fired at the helmet! Flash at ${clockOf(bearingOf(sh.x-h.x,sh.z-h.z),snipe.yaw)} o’clock, about ${Math.round(Math.hypot(sh.x-h.x,sh.z-h.z)/10)*10} m.${sh.ai.duel?' He is lifting his head to look. Now!':''}`)},Math.min(900,bd/MV*1000+150));
+  if(sh.ai.duel){sh.ai.peekT=6;sh.ai.moveT=0}}
+function killedByMortar(){endGame(false,'Killed by mortar fire','The enemy located your hide and mortared it. You stayed too long.',`Shoot and move. After one or two shots, or when ${SPOTN} shouts “mortars”, leave the hide with X and crawl away under cover.`)}
 function spotted(u,d){
   const st=mode==='snipe'?'prone':player.stance,cov=coverAt(player.x,player.z);
   let lesson='';
-  if(mode==='snipe')lesson='A patrol walked onto your hide. When Orlov warns of a patrol, keep still. If they keep coming, shoot them or leave before they arrive.';
+  if(mode==='snipe')lesson=`A patrol walked onto your hide. When ${SPOTN} warns of a patrol, keep still. If they keep coming, shoot them or leave before they arrive.`;
   else if(player.sprint)lesson='Running is loud and fast movement catches the eye. Walk only where no enemy can see you, and crawl in the open.';
   else if(st==='stand')lesson=`You were standing ${cov==='open'?'in the open':'up'} ${Math.round(d)} m from ${u.name.toLowerCase()}. Movement and silhouette betray a sniper first. Crawl (Z) inside the red view cones.`;
   else if(cov==='open')lesson='You moved across open ground inside an enemy’s view. Use grass, bushes and craters, and wait for patrols to look away.';
@@ -1169,11 +1453,12 @@ function endGame(win,title,text,lesson){
   if(gameOver)return;gameOver=true;
   setTimeout(()=>{if(document.pointerLockElement)document.exitPointerLock();
     $('#endTitle').textContent=title;$('#endText').textContent=text;$('#endLesson').textContent=lesson||'';
-    $('#endStamp').textContent=win?'Выполнено':'Провал';$('#endStamp').style.color=$('#endStamp').style.borderColor=win?'#2f5d1e':'';
+    $('#endStamp').textContent=win?STAMP[1]:STAMP[2];$('#endStamp').style.color=$('#endStamp').style.borderColor=win?'#2f5d1e':'';
     const acc=stats.shots?Math.round(stats.hits/stats.shots*100):0,avg=stats.hideScores.length?Math.round(stats.hideScores.reduce((a,b)=>a+b,0)/stats.hideScores.length):0;
     let score=stats.score+(win?300+avg*3+acc*2:0);
     $('#endStats').innerHTML=[['Score',score],['Shots',stats.shots],['Hits',stats.hits],['Accuracy',acc+'%'],['Head shots',stats.head],['Avg hide',avg||'–'],['Time',fmtTime(missionT)]].map(([a,b])=>`<div>${a}<b>${b}</b></div>`).join('')+(stats.kills.length?`<div style="grid-column:1/-1">Confirmed: ${stats.kills.map(k=>k.name+(k.part==='head'?' (head)':'')).join(', ')}</div>`:'');
-    if(win){const rank=score>1900?'Order of Lenin':score>1500?'Order of the Red Banner':score>1100?'Order of the Red Star':'Medal “For Courage”';$('#endMeta').textContent='After-action report · recommended for: '+rank}else $('#endMeta').textContent='After-action report';
+    if(win){const rank=MEDALS[score>1900?4:score>1500?3:score>1100?2:score>800?1:0];$('#endMeta').textContent='After-action report · recommended for: '+rank;saveProgress(score,rank)}else $('#endMeta').textContent='After-action report';
+    $('#nextBtn').hidden=!(win&&MI<MISSIONS.length&&gameType==='mission');
     show('#endCard',true)},win?300:900);
   if(!win){flashScreen(.5);if(mode==='snipe'){shake=.6}}
 }
@@ -1205,7 +1490,7 @@ function updateStalk(dt){
   camH=lerp(camH,overview?380:camHT,Math.min(1,dt*4));
   camera.fov=45;camera.position.set(player.x,hAt(player.x,player.z)+camH,player.z+camH*0.62);camera.lookAt(player.x,hAt(player.x,player.z),player.z-camH*0.05);
   // exfil
-  if(officerDead&&player.z>330&&!gameOver){$('#o3').classList.add('done');endGame(true,'Mission complete','You killed the officer and brought Orlov home. The machine guns on the factory line are silent tonight.','')}
+  if(officerDead&&player.z>330&&!gameOver){$('#o3').classList.add('done');endGame(true,'Mission complete',BASE?'You killed the officer and brought Orlov home. The machine guns on the factory line are silent tonight.':`${OBJ.type==='officer'?`The ${M.officerName.toLowerCase()} is dead`:OBJ.type==='duel'?`${eSniper.name} is dead`:'The job is done'}, and you brought ${SPOT} back to our lines.`,'')}
   if(!officerDead&&player.z>336&&stats.shots>0&&!gameOver&&$('#o1').classList.contains('done')){}
 }
 
@@ -1225,7 +1510,7 @@ function updateHud(){
     setBar('#visBar',playerVis()/1.2,.35,.7);setBar('#detBar',detMax,.3,.65);
     $('#compass').textContent='N ↑  ·  '+fmtTime(missionT);
     if(T>toastT&&gameType==='tutorial')p.hidden=true;else if(T>toastT){p.hidden=false;
-      p.innerHTML=officerDead?'Officer down. Withdraw south to our trench.':player.z>250?'Move north toward the ridge. The enemy line is beyond it.':player.stance!=='prone'?'Inside red view cones, crawl with <span class="k">Z</span>. Prone in a good spot, press <span class="k">Space</span> to assess a hide.':'Press <span class="k">Space</span> to assess this spot as a hide.'}
+      p.innerHTML=officerDead?`${OBJ.type==='officer'?'Officer down':'Objective done'}. Withdraw south to our trench.`:player.z>250?'Move north toward the ridge. The enemy line is beyond it.':player.stance!=='prone'?'Inside red view cones, crawl with <span class="k">Z</span>. Prone in a good spot, press <span class="k">Space</span> to assess a hide.':'Press <span class="k">Space</span> to assess this spot as a hide.'}
   }else if(mode==='snipe'){
     if(T>toastT)p.hidden=true;
     ['vEye','vBin','vSco'].forEach((id,i)=>$('#'+id).classList.toggle('on',['eye','binos','scope'][i]===snipe.view));
@@ -1256,7 +1541,14 @@ function drawOverlay(){
   const w=ov.width,h=ov.height,x=octx;x.clearRect(0,0,w,h);
   if(mode!=='snipe'||snipe.view==='eye')return;
   const ppm=h/(fovFor(snipe.view)*DEG*1000);
-  if(snipe.view==='scope'){
+  if(snipe.view==='scope'&&RIF.ret==='iron'){
+    // open sights at 1×: the out-of-focus rear leaf with its U notch, the front blade's tip on the aiming point
+    const cx=w/2,cy=h/2,u=Math.max(9,Math.min(w,h)*.018);
+    const vg=x.createRadialGradient(cx,cy,Math.min(w,h)*.25,cx,cy,Math.max(w,h)*.7);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.55)');x.fillStyle=vg;x.fillRect(0,0,w,h);
+    x.save();x.filter='blur(3px)';x.fillStyle='rgba(14,13,11,.96)';x.beginPath();x.moveTo(0,h);x.lineTo(0,cy+u*.9);x.lineTo(cx-u*1.4,cy);x.lineTo(cx-u*1.4,cy);x.arc(cx,cy,u*1.4,Math.PI,0,true);x.lineTo(cx+u*1.4,cy);x.lineTo(w,cy+u*.9);x.lineTo(w,h);x.closePath();x.fill();x.restore();
+    x.fillStyle='rgba(20,19,16,.97)';x.fillRect(cx-u*.32,cy,u*.64,h-cy);
+    x.fillStyle='rgba(225,210,170,.75)';x.font=`${Math.max(11,u*1.1)}px Courier Prime, monospace`;x.textAlign='center';x.fillText(`${RIF.name} · rear sight ${elBig(snipe.drum)} · no windage turret`,cx,h-u*3);
+  }else if(snipe.view==='scope'){
     const r=Math.min(w,h)*0.46,cx=w/2,cy=h/2;
     x.fillStyle='#050504';x.fillRect(0,0,w,h);x.globalCompositeOperation='destination-out';
     const g=x.createRadialGradient(cx,cy,r*0.9,cx,cy,r);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.beginPath();x.arc(cx,cy,r,0,7);x.fill();x.globalCompositeOperation='source-over';
@@ -1324,7 +1616,7 @@ addEventListener('keydown',e=>{
   }else if(mode==='snipe'&&!gameOver){
     if(e.code==='Digit1')setView('eye');if(e.code==='Digit2')setView('binos');if(e.code==='Digit3')setView('scope');
     if(e.code==='KeyW')drum(1);if(e.code==='KeyS')drum(-1);if(e.code==='KeyR')drum(10);if(e.code==='KeyF')drum(-10);if(e.code==='KeyA')windage(-0.5);if(e.code==='KeyD')windage(0.5);
-    if(e.code==='Space')fire();if(e.code==='KeyE')askSpotter();if(e.code==='KeyX')leaveHide();if(e.code==='KeyT'&&gameType==='range')toggleRCard();
+    if(e.code==='Space')fire();if(e.code==='KeyE')askSpotter();if(e.code==='KeyG')decoy();if(e.code==='KeyX')leaveHide();if(e.code==='KeyT'&&gameType==='range')toggleRCard();
   }
 });
 addEventListener('keyup',e=>{keys[e.code]=false});
@@ -1360,15 +1652,45 @@ function pickGround(cx,cy){const rc=new THREE.Raycaster();rc.setFromCamera({x:cx
 document.querySelectorAll('#touch .btn').forEach(b=>{const t=b.dataset.t;
   b.addEventListener('pointerdown',e=>{e.preventDefault();initAudio();
     if(t==='breath'){touchBreath=true;return}
-    ({stance:()=>{player.stance=player.stance==='stand'?'crouch':player.stance==='crouch'?'prone':'stand'},hide:openHideCard,map:()=>{overview=!overview},view:cycleView,drumUp:()=>drum(1),drumDn:()=>drum(-1),wL:()=>windage(-0.5),wR:()=>windage(0.5),fire,ask:askSpotter,leave:leaveHide})[t]?.()});
+    ({stance:()=>{player.stance=player.stance==='stand'?'crouch':player.stance==='crouch'?'prone':'stand'},hide:openHideCard,map:()=>{overview=!overview},view:cycleView,drumUp:()=>drum(1),drumDn:()=>drum(-1),wL:()=>windage(-0.5),wR:()=>windage(0.5),fire,ask:askSpotter,decoy,leave:leaveHide})[t]?.()});
   b.addEventListener('pointerup',()=>{if(t==='breath')touchBreath=false});b.addEventListener('pointerleave',()=>{if(t==='breath')touchBreath=false})});
 if(matchMedia('(pointer:coarse)').matches)document.body.classList.add('touch');
 
 function fade(cb){const f=$('#fade');f.style.opacity=1;setTimeout(()=>{cb();f.style.opacity=0},380)}
-$('#startBtn').onclick=()=>{initAudio();gameType='mission';rangeGroup.visible=false;difficulty=document.querySelector('input[name=diff]:checked').value;applyRifle(rifleChoice);show('#brief',false);resetMission();fade(()=>{mode='stalk';updateHudMode();toast('Our trench. The ridge is north; the German line lies beyond it.')})};
+// ---- campaign: briefing, mission sheet, saved progress ----
+const STAMP={sov:['Секретно','Выполнено','Провал'],fin:['Salainen','Suoritettu','Epäonnistui'],ger:['Geheim','Ausgeführt','Gescheitert'],usa:['Secret','Completed','Failed'],can:['Secret','Completed','Failed']}[M.side];
+const PKEY='stalingradSniper.campaign';
+function loadProgress(){try{return JSON.parse(localStorage.getItem(PKEY))||{}}catch(_){return{}}}
+function saveProgress(score,medal){try{const pr=loadProgress(),o=pr[MI]||{};if(!o.won||score>o.best)pr[MI]={won:true,best:Math.max(score,o.best||0),medal:score>=(o.best||0)?medal:o.medal};localStorage.setItem(PKEY,JSON.stringify(pr))}catch(_){}}
+const goMission=(n,extra='')=>{location.href=`${location.pathname}?m=${n}${extra}`};
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function fillBrief(){
+  $('#bStamp').textContent=STAMP[0];$('#bMeta').textContent=`Mission ${MI} of ${MISSIONS.length} · ${M.unit} · Build 1.8`;$('#bTitle').textContent=M.title;
+  $('#bPlace').textContent=`${M.place} · ${M.date} · ${M.time}`;$('#bStory').textContent=`${M.story} ${SPOT} goes with you as spotter.`;
+  $('#bObj').textContent=`Objective: ${objLabel().replace(/ \(\d+\/\d+\)$/,'')}, then withdraw to our trench.${M.decoys?' Helmet decoy: G.':''}`;
+  $('#bLegend').textContent=M.history;$('#bSrc').innerHTML=M.sources.map(x=>`<li><a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.t)}</a></li>`).join('');
+  $('#bTrain').hidden=!BASE;
+  const issued=!!M.rifle;$('#bIssued').hidden=!issued;$('#bRifles').hidden=issued;
+  if(issued){const r=RIFLES[M.rifle];$('#bIssued').innerHTML=`<b>Issued: ${r.name} · ${r.scope} ${r.power}</b> (${r.side}, ${r.cal}, ${r.mv} m/s, ${r.cap} rounds). ${r.blurb}`}
+  document.querySelector('label:has(input[value=recruit]) small').textContent=`${SPOTN} reads range and wind for you and calls the full firing solution.`;
+  document.querySelector('label:has(input[value=marksman]) small').textContent=`Ask ${SPOTN} (E) for estimates. They can be off by a few percent.`;
+  document.querySelector('#hideCard .meta').textContent=`Hide assessment · ${SPOTN}’s notes`;
+  document.title=BASE?'Stalingrad Sniper':`${M.title} · Stalingrad Sniper`;
+  const id=String(MI).padStart(2,'0'),img=$('#bMap');img.onload=()=>{$('#bMapFig').hidden=false};img.onerror=()=>{$('#bMapFig').hidden=true};img.src=`maps/m${id}.jpg`;img.alt=`Map: ${M.place}, ${M.date}`;
+  $('#bMapCap').textContent=`${M.place}, ${M.date}. Credits in maps/SOURCES.md.`;
+  if(location.protocol!=='file:')fetch('maps/credits.json').then(r=>r.ok?r.json():null).then(c=>{const k=c&&c['m'+id];if(k)$('#bMapCap').textContent=`${k.title}. ${k.author}, ${k.license}.`}).catch(()=>{})}
+function renderCamp(){const pr=loadProgress();let next=MISSIONS.findIndex((_,i)=>!(pr[i+1]&&pr[i+1].won))+1;
+  $('#cStamp').textContent=STAMP[0];
+  $('#cGrid').innerHTML=MISSIONS.map((m,i)=>{const n=i+1,o=pr[n];return`<button class="mcard${n===next?' next':''}" data-n="${n}"><span class="n">${n}</span><span class="t">${esc(m.title)}</span><small>${esc(m.place)} · ${esc(m.date)}</small><small>${ARMY[m.side].adj} · ${esc(m.unit)}</small>${o&&o.won?`<span class="won">✔ Won · best ${o.best} · ${esc(o.medal||'')}</span>`:''}</button>`}).join('');
+  document.querySelectorAll('.mcard').forEach(b=>b.onclick=()=>{const n=+b.dataset.n;if(n===MI&&MQ.has('m')){show('#camp',false);show('#brief',true)}else goMission(n)})}
+function openCamp(){renderCamp();show('#brief',false);show('#endCard',false);show('#camp',true)}
+fillBrief();
+$('#campBtn').onclick=openCamp;$('#endCamp').onclick=()=>{location.href=location.pathname};$('#nextBtn').onclick=()=>goMission(MI+1);
+$('#cManual').onclick=()=>show('#manual',true);
+$('#startBtn').onclick=()=>{initAudio();gameType='mission';rangeGroup.visible=false;difficulty=document.querySelector('input[name=diff]:checked').value;applyRifle(M.rifle||rifleChoice);setObjText();show('#brief',false);resetMission();fade(()=>{mode='stalk';updateHudMode();toast(`Our trench. The ridge is north; the ${EN.adj} line lies beyond it.`)})};
 $('#manualBtn').onclick=()=>show('#manual',true);$('#manualClose').onclick=()=>show('#manual',false);$('#endManual').onclick=()=>show('#manual',true);
 $('#occupyBtn').onclick=occupyHide;$('#leaveBtn').onclick=()=>show('#hideCard',false);
-$('#againBtn').onclick=()=>{show('#endCard',false);gameType='mission';resetMission();fade(()=>{mode='stalk';updateHudMode()})};
+$('#againBtn').onclick=()=>{show('#endCard',false);if(gameType==='mission')applyRifle(M.rifle||rifleChoice);gameType='mission';resetMission();setObjText();fade(()=>{mode='stalk';updateHudMode()})};
 
 // ======================= TRAINING: TUTORIAL & SHOOTING RANGE =======================
 const TUT_HIDE={x:-130,z:124};
@@ -1663,7 +1985,7 @@ function setLane(l,quiet){rangeLane=l;const far=l==='long';if(snipe.hide)setTuft
   if(!quiet)say(far?'Long lane: steel boards from 800 to 2,500 m out to the west, wind flags every 250 m. Boards past 600 m are 1.5× and 2× size.':'Short lane: 100 to 600 m, and a moving target at 250 m.')}
 function updateRange(dt){if(rangeCardOn&&(rcT-=dt)<0){rcT=.5;renderRCard()}
   for(const t of RT){if(!t.moving)continue;t.x=t.x0+18*Math.sin(T*1.5/18);t.g.position.x=t.x;t.speed=Math.abs(Math.cos(T*1.5/18))*1.5}}
-function toMenu(){if(document.pointerLockElement)document.exitPointerLock();applyRifle(rifleChoice);gameType='mission';gameOver=false;wind.fixed=false;Object.assign(wind,{var:28,mvar:4,int:[18,34]});
+function toMenu(){if(document.pointerLockElement)document.exitPointerLock();applyRifle(M.rifle||rifleChoice);gameType='mission';gameOver=false;wind.fixed=false;Object.assign(wind,{var:28,mvar:4,int:[18,34]});
   rangeGroup.visible=false;tutMarker.visible=tutTag.visible=false;scene.fog.near=FOG0[0];scene.fog.far=FOG0[1];camera.far=3200;camera.updateProjectionMatrix();['#hideCard','#endCard','#manual'].forEach(s=>show(s,false));
   setTufts(null);setBushes(null);playerMesh.visible=spotterMesh.visible=true;spawnEnemies();
   fade(()=>{mode='brief';updateHudMode();show('#brief',true)})}
@@ -1673,7 +1995,7 @@ function toMenu(){if(document.pointerLockElement)document.exitPointerLock();appl
   scene.children.forEach(m=>{if(!m.isMesh||m.geometry.type!=='CylinderGeometry')return;const rx=m.position.x-TUT_HIDE.x,rz=m.position.z-TUT_HIDE.z,al=(rx*dx+rz*dz)/L;
     if(al>4&&al<200&&Math.abs(rx*dz-rz*dx)/L<6)m.visible=false})}
 function refreshRifleUI(){$('#rifleName').textContent=`${RIF.name} · ${RIF.scope} ${RIF.power}`;$('#drumLab').textContent=RIF.el.lab;
-  $('#vSco').textContent=`3 · Scope ${RIF.power}`;$('#windUnit').textContent=RIF.wd?(RIF.wd.unit==='moa'?'MOA':'mils'):'no turret';const sel=$('#rRifle');if(sel)sel.value=rifleId}
+  $('#vSco').textContent=`3 · ${RIF.ret==='iron'?'Sights':'Scope'} ${RIF.power}`;$('#windUnit').textContent=RIF.wd?(RIF.wd.unit==='moa'?'MOA':'mils'):'no turret';const sel=$('#rRifle');if(sel)sel.value=rifleId}
 {const ids=Object.keys(RIFLES);
   $('#rifleList').innerHTML=ids.map((id,k)=>{const r=RIFLES[id];return(k===0?'<div class="rhead">World War II</div>':r.era&&!RIFLES[ids[k-1]].era?'<div class="rhead">Modern</div>':'')+`<label><input type="radio" name="rifle" value="${id}"${id===rifleChoice?' checked':''}>${r.name} · ${r.scope} ${r.power}<small>${r.side} · ${r.cal} · ${r.mv} m/s · ${r.cap} rounds<br>${r.blurb}</small></label>`}).join('');
   document.querySelectorAll('input[name=rifle]').forEach(i=>i.onchange=()=>{rifleChoice=i.value});
@@ -1685,13 +2007,15 @@ function refreshRifleUI(){$('#rifleName').textContent=`${RIF.name} · ${RIF.scop
     return`<tr><td><b>${r.name}</b> · ${r.scope}</td><td>${r.cal} · ${r.mv} m/s</td><td>${r.power}, ${r.fov}° field</td><td>${adj(r)} · ${r.wd?(r.wd.unit==='moa'?`${r.wd.click} MOA clicks`:`${r.wd.click} mil clicks`):'hold off (no turret)'}</td><td>${r.cap} · ~${r.moa} MOA</td></tr>`}).join('');
   refreshRifleUI()}
 buildRange();
-$('#tutBtn').onclick=startTutorial;$('#rangeBtn').onclick=startRange;$('#rExit').onclick=toMenu;$('#rHelp').onclick=()=>{rangeHelp=!rangeHelp;renderRange()};$('#rCardBtn').onclick=e=>{toggleRCard();e.target.blur()};['short','long'].forEach(l=>{const b=$('#rl_'+l);b.onclick=()=>setLane(l);b.onkeydown=e=>{if(e.key==='Enter'||e.key===' ')setLane(l)}});['calm','steady','gusty'].forEach(w=>{const b=$('#rw_'+w);b.onclick=()=>setRangeWind(w);b.onkeydown=e=>{if(e.key==='Enter'||e.key===' ')setRangeWind(w)}});
+const trainGo=(f,k)=>()=>{if(BASE){show('#camp',false);f()}else goMission(7,'&go='+k)};$('#tutBtn').onclick=$('#cTut').onclick=trainGo(startTutorial,'tutorial');$('#rangeBtn').onclick=$('#cRange').onclick=trainGo(startRange,'range');$('#rExit').onclick=toMenu;$('#rHelp').onclick=()=>{rangeHelp=!rangeHelp;renderRange()};$('#rCardBtn').onclick=e=>{toggleRCard();e.target.blur()};['short','long'].forEach(l=>{const b=$('#rl_'+l);b.onclick=()=>setLane(l);b.onkeydown=e=>{if(e.key==='Enter'||e.key===' ')setLane(l)}});['calm','steady','gusty'].forEach(w=>{const b=$('#rw_'+w);b.onclick=()=>setRangeWind(w);b.onkeydown=e=>{if(e.key==='Enter'||e.key===' ')setRangeWind(w)}});
 // ======================= MAIN LOOP =======================
 function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();ov.width=w;ov.height=h}
 addEventListener('resize',resize);resize();
 spawnEnemies();playerMesh=makeSoldier('player');spotterMesh=makeSoldier('spotter');scene.add(playerMesh,spotterMesh);playerMesh.position.set(0,hAt(0,338),338);
 scene.traverse(o=>{if(!(o.isMesh)||o.userData.noShadow)return;o.receiveShadow=true;if(!o.userData.recvOnly)o.castShadow=true});
 updateHudMode();
+// first screen: the campaign sheet, a mission's briefing (?m=N), or straight into training (&go=)
+if(MQ.get('go')==='tutorial')startTutorial();else if(MQ.get('go')==='range')startRange();else if(!MQ.has('m'))openCamp();
 let last=performance.now();
 function loop(now){
   requestAnimationFrame(loop);
