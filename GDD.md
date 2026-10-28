@@ -347,7 +347,7 @@ Sun positions were computed for the real place, date and local time, then turned
 - *Sources:* [Lyudmila Pavlichenko (Wikipedia)](https://en.wikipedia.org/wiki/Lyudmila_Pavlichenko); [National Park Service: "Lady Death" and the First Lady](https://www.nps.gov/elro/blogs/lady-death-and-the-first-lady.htm).
 
 **5. Mamayev Kurgan.** Stalingrad, 25 October 1942, 08:00. Shell-torn hill slopes, water towers, ruins of the Metiz works (game azimuth 214°). Enemy: German 6th Army. Objective: the artillery observer and his signaller.
-- *History:* Vasily Zaitsev, a former Pacific Fleet clerk, served in the 1047th Rifle Regiment of the 284th Rifle Division, which crossed into Stalingrad in September 1942. Soviet sources credit him with 225 kills between October and 17 December 1942. With Nikolai Kulikov he developed the "sixes": three pairs of sniper and observer covering a sector. He was wounded in the eyes by a mortar round in January 1943.
+- *History:* Vasily Zaitsev, a former Pacific Fleet sailor, served in the 1047th Rifle Regiment of the 284th Rifle Division, which crossed into Stalingrad in September 1942. Soviet sources credit him with 225 to 265 kills by 17 December 1942. With Nikolai Kulikov he developed the "sixes": three pairs of sniper and observer covering a sector. He was wounded in the eyes by a mortar round in January 1943.
 - *Game:* urban hill, many ruins. Spotter: Nikolai Kulikov (historical partner).
 - *Sources:* [Vasily Zaitsev (Wikipedia)](https://en.wikipedia.org/wiki/Vasily_Zaitsev_(sniper)); Vasily Grossman, *A Writer at War* (2005), Stalingrad chapters.
 
@@ -364,7 +364,7 @@ Sun positions were computed for the real place, date and local time, then turned
 - *Sources:* [Erwin König (Wikipedia)](https://en.wikipedia.org/wiki/Erwin_K%C3%B6nig); [National Interest: "The Greatest Sniper Duel in History Is a Myth"](https://nationalinterest.org/node/33161); Zaitsev, *Notes of a Russian Sniper* (2003).
 
 **9. Hill 27.** Guadalcanal, 13 January 1943, 08:00. Jungle ridge with kunai grass and tall palms, humid haze (game azimuth 230°). Enemy: Imperial Japanese Army. Objective: three snipers tied into palm trees.
-- *History:* John B. George, a rifleman with the 132nd Infantry of the Americal Division, landed on Guadalcanal on 8 December 1942. His battalion flanked the Gifu strongpoint near Mount Austen and took Hill 27 in January 1943. He used a scoped rifle with a spotter on field binoculars, and wrote it all down in *Shots Fired in Anger* (1947). He actually carried a privately bought scoped Winchester; the game issues the M1903A4.
+- *History:* John B. George, a rifleman with the 132nd Infantry of the Americal Division, landed on Guadalcanal on 8 December 1942. His battalion flanked the Gifu strongpoint near Mount Austen and took Hill 27 in January 1943. He used a scoped rifle with a spotter on field binoculars, and wrote it all down in *Shots Fired in Anger* (1947). The sources do not name his rifle model; the game issues the M1903A4.
 - *Game:* targets high in palms (aim above the treeline). Spotter: PFC Mazur.
 - *Sources:* [Pacific Wrecks: review of *Shots Fired in Anger*](https://pacificwrecks.com/reviews/shots-fired-in-anger.html); John B. George, *Shots Fired in Anger* (1947, NRA reprint 1981); John Miller Jr., [*Guadalcanal: The First Offensive*](https://history.army.mil/html/books/005/5-3/index.html) (US Army CMH, 1949).
 
@@ -408,7 +408,7 @@ Sun positions were computed for the real place, date and local time, then turned
 - *Game:* dense urban cover, short ranges, many targets. Spotter: Sgt. Zagitov (named in tribute to Gazi Zagitov of the 150th Rifle Division, a Reichstag flag-raiser).
 - *Sources:* [Moltke Bridge (Wikipedia)](https://en.wikipedia.org/wiki/Moltke_Bridge); Antony Beevor, *Berlin: The Downfall 1945* (2002).
 
-**18. Taiga Shaman.** Foothills of the Greater Khingan, Manchuria, 12 August 1945, 08:00. Grassy hills, larch woods, summer haze (game azimuth 337°: the morning sun is ahead of you, so watch the glint). Enemy: Japanese Kwantung Army. Objective: two officers.
+**18. Taiga Shaman.** Foothills of the Greater Khingan, Manchuria, 12 August 1945, 08:00. Grassy hills, larch woods, summer haze (game azimuth 349°: the morning sun is ahead of you, so watch the glint). Enemy: Japanese Kwantung Army. Objective: two officers.
 - *History:* Semyon Nomokonov, an Evenk hunter from Transbaikalia, served from 1941 to 1945 on five fronts. He marked kills on his pipe, moved in horsehair boots, used mirror fragments and helmets on strings as decoys, and was credited with 367 kills. In August 1945, on the Transbaikal Front in the Khingan foothills, he killed 8 soldiers and officers of the Kwantung Army (some records say 15) and was given a personal rifle, binoculars and a horse.
 - *Game:* decoy (G). Spotter: Pvt. Tsyrenov.
 - *Sources:* [Semyon Nomokonov (Wikipedia)](https://en.wikipedia.org/wiki/Semyon_Nomokonov); [Номоконов, Семён Данилович (Russian Wikipedia)](https://ru.wikipedia.org/wiki/%D0%9D%D0%BE%D0%BC%D0%BE%D0%BA%D0%BE%D0%BD%D0%BE%D0%B2,_%D0%A1%D0%B5%D0%BC%D1%91%D0%BD_%D0%94%D0%B0%D0%BD%D0%B8%D0%BB%D0%BE%D0%B2%D0%B8%D1%87).
