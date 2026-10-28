@@ -245,7 +245,7 @@ The tutorial uses a fixed wind of 8 mph from 9 o'clock (full value) on the shot 
 2. **Update this GDD first** and commit it, then change the code and commit that.
 3. Bump the build number in the briefing meta and in the GDD header.
 4. Merge into `main` with `--no-ff`, tag `vMAJOR.MINOR`, and add a line to the version history below.
-5. Export `stalingrad-sniper-MAJOR.MINOR.html` to the Mac folder `Documents/AI/SNIPER` (the repository root, where exports are git-ignored) and to the project files, and republish the artifact.
+5. Update the Mac folder `Documents/AI/SNIPER`, which is the repository root and the only home of the sources. The game is `index.html` only: there are no versioned copies, and every past build is retrieved from its tag (`git show v1.6:index.html`). Republish the artifact and refresh the backup bundle `stalingrad-sniper.bundle`, which is git-ignored.
 
 ## 12. Version history
 

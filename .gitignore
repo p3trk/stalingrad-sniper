@@ -1,5 +1,4 @@
 .DS_Store
 node_modules/
-# exported builds and the backup bundle live beside the repo
-stalingrad-sniper*.html
+# git backup bundle beside the repo
 *.bundle
