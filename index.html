@@ -211,7 +211,7 @@ body.touch .tut{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
 <div class="modal" id="brief">
   <div class="sheet">
     <div class="stamp">Секретно</div>
-    <div class="meta">62nd Army · Sniper detachment · Order No. 17 · Build 1.5</div>
+    <div class="meta">62nd Army · Sniper detachment · Order No. 17 · Build 1.6</div>
     <h1>Stalingrad Sniper</h1>
     <div class="meta">Red October factory district · 12 November 1942 · 07:40</div>
     <h2>Situation</h2>
@@ -263,7 +263,7 @@ body.touch .tut{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
     <h2>Range</h2>
     <p><b>Range (m) = target height (m) × 1000 ÷ height in mils.</b> Use the binocular mil scale. A standing man is about 1.75 m, so a man 4 mils tall is about 440 m away.</p>
     <h2>Wind</h2>
-    <p>Angle of the flag from its pole ÷ 4 ≈ wind speed in mph. Smoke leans the same way. Wind from 3 or 9 o’clock has full value, from 1–2, 4–5, 7–8 and 10–11 about half, and from 12 or 6 none. A 10 mph full-value wind pushes a 7.62 mm round about 0.5 m at 450 m. Dial windage into the wind.</p>
+    <p>Angle of the flag from its pole ÷ 4 ≈ wind speed in mph. Smoke leans the same way. Only the part of the wind blowing across the bullet’s path pushes it sideways. Wind from 3 or 9 o’clock has <b>full value</b> (use all of it). From 2, 4, 8 or 10 o’clock it has <b>seven-eighths</b>, nearly full. From 1, 5, 7 or 11 o’clock it has <b>half value</b> (10 mph counts as 5 mph). From 12 or 6 o’clock it has none. A 10 mph full-value wind pushes a 7.62 mm round about 0.5 m at 450 m. Dial windage into the wind.</p>
     <h2>Rifles and scopes</h2>
     <p>Set the drum to the nearest mark and hold a little high or low for the rest. A moving man needs lead: the round takes about 0.7 s to reach 450 m. Soviet scopes adjust in thousandths (mils), British and American ones in minutes of angle (1 MOA ≈ 0.29 mil ≈ 2.9 cm at 100 m).</p>
     <div style="overflow-x:auto"><table class="rifletab" id="rifleTable"></table></div>
@@ -1112,6 +1112,8 @@ function askSpotter(){if(mode!=='snipe')return;
   let s=`Wind from ${clock} o’clock, about ${mph} mph.`;
   if(t){const rr=Math.round(t.d*(e?R(.93,1.07):1)/10)*10;s=`${t.u.name}, about ${rr} m. `+s}
   say(s)}
+// sniper clock method: share of the wind that blows across the line of fire
+function windValue(c){return [3,9].includes(c)?{f:1,n:'full value',s:'full'}:[2,4,8,10].includes(c)?{f:.875,n:'7/8 value',s:'7/8'}:[1,5,7,11].includes(c)?{f:.5,n:'half value',s:'half'}:{f:0,n:'no value',s:'none'}}
 function clockOf(from,facing){let rel=((from-facing)%360+360)%360;let c=Math.round(rel/30)%12;return c===0?12:c}
 function solutionFor(d,bear){const key=rifleId+Math.round(d*2);let c=solCache.get(key);
   if(!c){const e=RIF.el;let drum;
@@ -1235,7 +1237,7 @@ function updateHud(){
     $('#chips').innerHTML=chips.join('');
     // wind & target
     const clock=clockOf(wind.from,snipe.yaw),cw=crossWind(snipe.yaw);
-    const val=[3,9].includes(clock)?'full value':[12,6].includes(clock)?'no value':'half value';
+    const val=windValue(clock).n;
     if(showSol())$('#windTxt').innerHTML=`Wind from <b>${clock} o’clock</b> (${val}), <b>${wind.now.toFixed(0)} mph</b>`;
     else $('#windTxt').innerHTML=`Wind: flag angle ÷ 4 = mph. Smoke leans downwind.`;
     const t=targetUnderAim(snipe.view==='scope'?12:25);
@@ -1433,7 +1435,7 @@ const D={
     const h=m*px;return SV(`<line x1="150" y1="14" x2="150" y2="104" stroke="var(--paper)"/>${t}
       <g fill="var(--khaki)"><circle cx="134" cy="${14+h*.07}" r="${h*.07}"/><rect x="${134-h*.1}" y="${14+h*.15}" width="${h*.2}" height="${h*.4}"/><rect x="${134-h*.07}" y="${14+h*.55}" width="${h*.14}" height="${h*.45}"/></g>
       ${TX(8,30,'Officer ≈ 1.75 m')}${TX(8,46,`spans ≈ ${m.toFixed(1)} mils`)}${TX(186,40,'Range (m) =')}${TX(186,56,'height × 1000')}${TX(186,72,'÷ mils')}${TX(8,114,'Read the vertical scale in the binoculars')}`)},
-  wind:(clock,mph)=>{const cx=68,cy=58,r=40;let s='';for(let h=1;h<=12;h++){const a=(h*30-90)*DEG,full=h===3||h===9,none=h===12||h===6;s+=`<path d="M${cx+Math.cos(a-.2)*r} ${cy+Math.sin(a-.2)*r} A${r} ${r} 0 0 1 ${cx+Math.cos(a+.2)*r} ${cy+Math.sin(a+.2)*r}" stroke="${full?'var(--amber)':none?'#666':'var(--khaki)'}" stroke-width="${full?6:none?2:3.5}" fill="none"/>`}
+  wind:(clock,mph)=>{const cx=68,cy=58,r=40;let s='';for(let h=1;h<=12;h++){const a=(h*30-90)*DEG,f=windValue(h).f;s+=`<path d="M${cx+Math.cos(a-.2)*r} ${cy+Math.sin(a-.2)*r} A${r} ${r} 0 0 1 ${cx+Math.cos(a+.2)*r} ${cy+Math.sin(a+.2)*r}" stroke="${f===1?'var(--amber)':f?'var(--khaki)':'#666'}" stroke-width="${f===1?6:f>.8?4.5:f?2.5:2}" fill="none"/>`}
     const wa=(clock*30-90)*DEG,ang=clamp(mph*4,6,88)*DEG,fx=212,fy=22;
     return SV(`${s}${TX(cx,cy-r+18,'12','text-anchor="middle" font-size="9"')}${TX(cx+r-13,cy+4,'3','text-anchor="middle" font-size="9"')}${TX(cx,cy+r-8,'6','text-anchor="middle" font-size="9"')}${TX(cx-r+13,cy+4,'9','text-anchor="middle" font-size="9"')}
       <line x1="${cx}" y1="${cy+12}" x2="${cx}" y2="${cy-12}" stroke="var(--paper)" stroke-width="2"/><path d="M${cx} ${cy-16} l-5 8 l10 0z" fill="var(--paper)"/>
@@ -1441,7 +1443,7 @@ const D={
       <line x1="${fx}" y1="${fy}" x2="${fx}" y2="112" stroke="var(--paper)" stroke-width="2"/>
       <path d="M${fx} ${fy} L${fx+Math.sin(ang)*60} ${fy+Math.cos(ang)*60} L${fx+Math.sin(ang)*60+Math.cos(ang)*16} ${fy+Math.cos(ang)*60-Math.sin(ang)*16} L${fx+Math.cos(ang)*16} ${fy-Math.sin(ang)*16}Z" fill="var(--paper)" opacity=".85"/>
       <path d="M${fx} ${fy+34} A34 34 0 0 0 ${fx+Math.sin(ang)*34} ${fy+Math.cos(ang)*34}" stroke="var(--amber)" fill="none"/>
-      ${TX(150,118,`flag ${Math.round(mph*4)}° ÷ 4 ≈ ${Math.round(mph)} mph`,'fill="var(--amber)"')}${TX(4,118,'gold = full value','font-size="9"')}`,124)},
+      ${TX(150,118,`flag ${Math.round(mph*4)}° ÷ 4 ≈ ${Math.round(mph)} mph`,'fill="var(--amber)"')}${TX(4,12,'gold = full · thick = 7/8 · thin = half','font-size="8.5"')}`,124)},
   drum:(drum,d)=>{const X=x=>20+x*.42,Y=h=>58-h*38;let p='';for(let x=0;x<=640;x+=20){const h=x===0?-SIGHT_H:simHeight(elTheta(drum),x);p+=(x?'L':'M')+X(x).toFixed(1)+' '+Y(h).toFixed(1)}
     return SV(`<line x1="20" y1="58" x2="292" y2="58" stroke="var(--paper)" stroke-dasharray="4 3"/>${TX(196,52,'line of sight','font-size="9"')}
       <path d="${p}" fill="none" stroke="var(--amber)" stroke-width="2.4"/>
@@ -1462,9 +1464,20 @@ const D={
       ${TX(130,114,'(each click = 100 m)','font-size="9"')}`,120)},
   windTable:(d)=>{const per=MPH*(tof(d)-d/MV),rows=[2,4,6,8,10,12].map(m=>{const dr=m*per;return[m,dr,dr/d*1000]});
     return SV(`${TX(10,16,`At ${Math.round(d)} m (Mosin, light ball):`,'fill="var(--amber)"')}
-      ${TX(10,34,'wind mph','font-size="9"')}${TX(86,34,'drift','font-size="9"')}${TX(150,34,'full value','font-size="9"')}${TX(226,34,'half value','font-size="9"')}<line x1="8" y1="38" x2="292" y2="38" stroke="var(--line)"/>
-      ${rows.map(([m,dr,mil],i)=>{const y=52+i*13;return TX(24,y,m)+TX(86,y,`${Math.round(dr*100)} cm`)+TX(150,y,`${mil.toFixed(1)} mil`,'fill="var(--ok)"')+TX(226,y,`${(mil/2).toFixed(1)} mil`)}).join('')}
-      ${TX(10,138,'mils = drift (cm) ÷ range (m) × 10','font-size="9"')}${TX(10,150,'dial to the nearest 0.5-mil click, into the wind','font-size="9"')}`,156)},
+      ${TX(10,34,'wind mph','font-size="9"')}${TX(64,34,'drift','font-size="9"')}${TX(120,34,'full','font-size="9"')}${TX(180,34,'7/8','font-size="9"')}${TX(240,34,'half','font-size="9"')}<line x1="8" y1="38" x2="292" y2="38" stroke="var(--line)"/>
+      ${rows.map(([m,dr,mil],i)=>{const y=52+i*13;return TX(24,y,m)+TX(64,y,`${Math.round(dr*100)} cm`)+TX(120,y,`${mil.toFixed(1)} mil`,'fill="var(--ok)"')+TX(180,y,`${(mil*.875).toFixed(1)} mil`)+TX(240,y,`${(mil/2).toFixed(1)} mil`)}).join('')}
+      ${TX(10,138,'o’clock: full 3, 9 · 7/8 2, 4, 8, 10 · half 1, 5, 7, 11','font-size="8.5"')}${TX(10,151,'mils = drift (cm) ÷ range (m) × 10','font-size="9"')}${TX(10,164,'dial to the nearest 0.5-mil click, into the wind','font-size="9"')}`,170)},
+  windValue:()=>{const L=27,cy=62;let g='';
+    const arr=(x1,y1,x2,y2,col,w,dash='')=>{const a=Math.atan2(y2-y1,x2-x1),hx=x2-Math.cos(a)*7,hy=y2-Math.sin(a)*7;
+      return`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="${col}" stroke-width="${w}" ${dash}/><path d="M${x2.toFixed(1)} ${y2.toFixed(1)} L${(hx+Math.sin(a)*4).toFixed(1)} ${(hy-Math.cos(a)*4).toFixed(1)} L${(hx-Math.sin(a)*4).toFixed(1)} ${(hy+Math.cos(a)*4).toFixed(1)}Z" fill="${col}"/>`};
+    [[3,'full','all of it'],[2,'7/8','nearly all'],[1,'half','half'],[12,'none','none']].forEach(([h,v,w],i)=>{const cx=38+i*75,a=h*30*DEG,sx=cx+Math.sin(a)*L,sy=cy-Math.cos(a)*L,f=windValue(h).f;
+      g+=`<line x1="${cx}" y1="${cy+36}" x2="${cx}" y2="${cy-30}" stroke="var(--paper)" stroke-dasharray="3 3"/><path d="M${cx} ${cy-36} l-4 7 h8z" fill="var(--paper)"/>`;
+      if(f>0&&f<1)g+=`<line x1="${sx.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${sx.toFixed(1)}" y2="${cy}" stroke="#888" stroke-width="1.6" stroke-dasharray="3 2"/>`;
+      g+=arr(sx,sy,cx,cy,'var(--khaki)',2.6);
+      if(f>0)g+=arr(sx,cy,cx,cy,'var(--amber)',3.4);
+      if(h===12)g+=TX(cx+5,cy-12,'head','font-size="8" fill="#999"');
+      g+=TX(cx,14,`${h} o’clock`,'text-anchor="middle" font-size="9"')+TX(cx,cy+50,v,`text-anchor="middle" font-weight="700" fill="${f===1?'var(--amber)':f?'var(--paper)':'#999'}"`)+TX(cx,cy+62,`${Math.floor(f*100)}%`,'text-anchor="middle" font-size="9"')});
+    return SV(`${g}${TX(6,142,'khaki: wind · gold: crosswind part (counts)','font-size="8.5"')}${TX(6,154,'grey: head/tail part (ignored) · dashed: bullet','font-size="8.5"')}`,160)},
   breath:()=>{let p='M10 60';for(let x=10;x<=200;x+=4){const y=60-Math.sin((x-10)/28)*26;p+=` L${x} ${Math.max(y,60-26).toFixed(1)}`}
     let q='M200 60';for(let x=200;x<=290;x+=3)q+=` L${x} ${(60+Math.sin(x*1.3)*(x-200)/9).toFixed(1)}`;
     return SV(`<path d="${p}" fill="none" stroke="var(--khaki)" stroke-width="2"/><path d="M160 34 H200" stroke="var(--ok)" stroke-width="4"/><path d="${q}" fill="none" stroke="var(--red)" stroke-width="2"/>
@@ -1488,8 +1501,18 @@ const TUT=[
   {t:'Range with mils',aid:'mils',x:()=>`The binoculars have a scale in <b>mils</b> (1 mil = 1 m at 1,000 m). The magnified box on the left brackets the officer against that scale: he is about <b>${(1750/officerSol().d).toFixed(1)} mils</b> tall. A standing man is about 1.75 m. <b>Range = height (m) × 1000 ÷ mils.</b> How far is he?`,svg:()=>D.mils(officerSol().d),tag:'officer',quiz:()=>{const d=officerSol().d,c=Math.round(d/100)*100;return{opts:[c-100,c,c+100,c+200].sort((a,b)=>a-b).map(v=>({t:`About ${v} m`,ok:v===c,why:v===c?'':`1.75 × 1000 ÷ ${(1750/d).toFixed(1)} mils ≈ ${Math.round(d)} m. The nearest hundred is ${c} m.`}))}}},
   {t:'Find the wind',x:'Look at the white flag on the HQ roof (red tag). Smoke from the burning lorry also leans downwind.',svg:null,tag:'flag',ok:()=>snipe.view!=='eye'&&milsTo(flagPos())<22},
   {t:'Read the wind',x:()=>`Read where the wind comes from on the clock (12 = towards the target) and how strong it is. The flag stands about ${Math.round(wind.now*4)}° from the pole.`,svg:()=>D.wind(clockOf(wind.from,snipe.yaw),wind.now),tag:'flag',quiz:()=>{const c=clockOf(wind.from,snipe.yaw),m=Math.round(wind.now);const right=`From ${c} o’clock, full value, ~${m} mph`;const opts=[{t:right,ok:true},{t:`From ${c===9?3:9} o’clock, full value, ~${m} mph`,why:'The flag streams away from the wind. It blows from the side the flag points away from.'},{t:`From ${c} o’clock, half value, ~${Math.max(1,Math.round(m/2))} mph`,why:'3 and 9 o’clock are full value. Speed ≈ flag angle ÷ 4.'},{t:'From 12 o’clock, no value',why:'A headwind would make the flag point straight at you.'}];return{opts:opts.sort(()=>rnd()-.5)}}},
+  {t:'Full and half value',enter:()=>{tut.wv={h:[1,2,4,5,7,8,10,11][Math.floor(rnd()*8)],m:[8,16][Math.floor(rnd()*2)]}},
+    x:()=>{const {h,m}=tut.wv;return`Only the part of the wind blowing <b>across</b> the bullet’s path pushes it sideways. The part blowing along the path, from in front or behind, is ignored. The diagram splits each wind into these two parts. The clock value is the share that counts:<br>
+      <b>Full, 3 or 9 o’clock:</b> square from the side. 8 mph → use <b>8 mph</b>.<br>
+      <b>7/8, 2, 4, 8 or 10 o’clock:</b> 60° off the line, nearly full. 8 mph → <b>7 mph</b>.<br>
+      <b>Half, 1, 5, 7 or 11 o’clock:</b> 30° off the line. 8 mph → <b>4 mph</b>.<br>
+      <b>None, 12 or 6 o’clock:</b> head or tail wind. No windage.<br>
+      Look up the result in the full-value column of Orlov’s table. <b>Your turn:</b> the flag shows <b>${m} mph from ${h} o’clock</b>. What wind do you use?`},
+    svg:()=>D.windValue(),
+    quiz:()=>{const {h,m}=tut.wv,v=windValue(h),ok=Math.round(m*v.f),why=`${h} o’clock is ${v.n}: ${m} × ${v.f===.5?'1/2':'7/8'} ≈ ${ok} mph.`;
+      return{opts:[...new Set([ok,m,Math.round(m*(v.f===.5?.875:.5)),0])].map(x=>({t:x?`${x} mph${x===m?' (all of it)':''}`:'0 mph (no value)',ok:x===ok,why:x===ok?'':why})).sort((a,b)=>a.t.localeCompare(b.t,undefined,{numeric:true}))}}},
   {t:'Set the elevation drum',aid:'impact',x:()=>{const o=officerSol(),low=-simHeight(elTheta(3),o.d);return`A bullet falls as it flies, so the scope must look slightly down at the barrel. The <b>drum</b> sets the distance where the curved path meets your aim. PU drum numbers are hundreds of metres: 3 = 300 m, 4 = 400 m. You ranged <b>${Math.round(o.d)} m</b>, the nearest hundred is ${o.drum*100} m, so set <b>drum ${o.drum}</b> with <span class="k">W</span>/<span class="k">S</span>. In the magnified box, the red cross shows where the round would land with the post on his chest. On drum 3 it lands ${cmTxt(low)} ${low>0?'low':'high'}. Watch it climb onto his chest as you set the drum.`},svg:()=>{const o=officerSol();return D.drumDial(snipe.drum,o.drum,o.d)+D.drum(o.drum,o.d)},ok:()=>snipe.drum===officerSol().drum},
-  {t:'Wind in mils',aid:'impact',x:()=>{const o=officerSol(),d=o.d,per=MPH*(tof(d)-d/MV),ex=4*per;return`Wind pushes the round sideways, and the push grows quickly with range. Orlov’s table below converts wind into mils at this range. Use the <b>full value</b> column for wind from 3 or 9 o’clock and <b>half value</b> for 1–2, 4–5, 7–8 and 10–11 o’clock. <br><b>Worked example:</b> a 4 mph full-value wind drifts the round ${cmTxt(ex)}. ${Math.round(ex*100)} cm ÷ ${Math.round(d)} m × 10 = <b>${(ex/d*1000).toFixed(1)} mil</b>. <br>Today the flag shows <b>${Math.round(wind.now)} mph from ${clockOf(wind.from,snipe.yaw)} o’clock</b>. How many mils do you dial?`},svg:()=>D.windTable(officerSol().d),
+  {t:'Wind in mils',aid:'impact',x:()=>{const o=officerSol(),d=o.d,per=MPH*(tof(d)-d/MV),ex=4*per;return`Wind pushes the round sideways, and the push grows quickly with range. Orlov’s table below converts wind into mils at this range. Use the <b>full value</b> column for wind from 3 or 9 o’clock, <b>7/8</b> for 2, 4, 8 or 10 o’clock and <b>half</b> for 1, 5, 7 or 11 o’clock. <br><b>Worked example:</b> a 4 mph full-value wind drifts the round ${cmTxt(ex)}. ${Math.round(ex*100)} cm ÷ ${Math.round(d)} m × 10 = <b>${(ex/d*1000).toFixed(1)} mil</b>. <br>Today the flag shows <b>${Math.round(wind.now)} mph from ${clockOf(wind.from,snipe.yaw)} o’clock</b>. How many mils do you dial?`},svg:()=>D.windTable(officerSol().d),
     quiz:()=>{const o=officerSol(),v=Math.abs(Math.round(o.dial*2)/2);const c=[...new Set([v,Math.max(0,v-.5),v+.5,Math.round(v)===v?v*2||1:v+1])].slice(0,4).sort((a,b)=>a-b);
       return{opts:c.map(m=>({t:`${m.toFixed(1)} mil`,ok:m===v,why:m===v?'':`Read the full-value column at ${Math.round(wind.now)} mph: ${Math.abs(o.dial).toFixed(1)} mil, which rounds to the ${v.toFixed(1)}-mil click.`}))}}},
   {t:'Dial the windage',aid:'impact',x:()=>{const o=officerSol(),v=Math.round(o.dial*2)/2,clk=clockOf(wind.from,snipe.yaw),cur=snipe.windMil;return`The wind comes from ${clk} o’clock, your ${v<0?'left':'right'}, and would carry the round ${cmTxt(o.dial*o.d/1000)} to the ${v<0?'right':'left'}. Turn the windage the other way, <b>into the wind</b>: dial <b>${Math.abs(v).toFixed(1)} mil ${v<0?'left':'right'}</b> with <span class="k">${v<0?'A':'D'}</span>. Each press is one 0.5-mil click, so that is <b>${Math.round(Math.abs(v)/.5)} press${Math.round(Math.abs(v)/.5)===1?'':'es'}</b>. Now set: ${Math.abs(cur).toFixed(1)} mil ${cur<0?'left':cur>0?'right':''}. Watch the cross in the magnified box slide onto his chest.`},svg:()=>D.windage(Math.round(officerSol().dial*2)/2),ok:()=>{const v=Math.round(officerSol().dial*2)/2;return Math.abs(snipe.windMil-v)<=.5&&(v===0||Math.sign(snipe.windMil)===Math.sign(v))}},
