@@ -234,7 +234,7 @@ The tutorial uses a fixed wind of 8 mph from 9 o'clock (full value) on the shot 
 2. **Update this GDD first** and commit it, then change the code and commit that.
 3. Bump the build number in the briefing meta and in the GDD header.
 4. Merge into `main` with `--no-ff`, tag `vMAJOR.MINOR`, and add a line to the version history below.
-5. Export `stalingrad-sniper-MAJOR.MINOR.html` to the Mac folder `Documents/AI/SNIPER` and to the project files, and republish the artifact.
+5. Export `stalingrad-sniper-MAJOR.MINOR.html` to the Mac folder `Documents/AI/SNIPER` (the repository root, where exports are git-ignored) and to the project files, and republish the artifact.
 
 ## 12. Version history
 
