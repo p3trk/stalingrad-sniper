@@ -172,7 +172,7 @@ Exposure decays slowly. Shots fired while our artillery is firing count only ×0
 - **Win:** the officer is dead and you are back in our trench.
 - **Lose:** you are spotted, or caught by the mortars.
 - **Score:** kill points, plus 300 for the win, plus 3 × the average hide score, plus 2 × accuracy %.
-- **Medals:** Medal "For Courage", Order of the Red Star (above 1,100), Order of the Red Banner (above 1,500) or Order of Lenin (above 1,900).
+- **Medals:** Medal "For Courage", Order of Glory 3rd class (above 800), Order of the Red Star (above 1,100), Order of the Red Banner (above 1,500) or Hero of the Soviet Union (above 1,900). Other armies use their own medals (section 14).
 
 ## 8. Rifles and scopes
 
