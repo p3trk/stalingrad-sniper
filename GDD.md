@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Current build | 1.5 |
+| Current build | 1.6 |
 | Platform | Single HTML page (Three.js r128), desktop browser first, touch supported |
 | Owner | Petr |
 | Last updated | 2026-10-28 |
@@ -38,7 +38,7 @@ Red October factory district, Stalingrad, 12 November 1942, 07:40. You are a sni
 | Mode | Purpose | Notes |
 |---|---|---|
 | Mission | The main game | Choose a difficulty and a rifle on the briefing sheet |
-| Tutorial | Teaches the full drill in 17 steps | Always issues the Mosin 91/30 with the PU scope. Being spotted sends you back to the last checkpoint instead of ending the game |
+| Tutorial | Teaches the full drill in 18 steps | Always issues the Mosin 91/30 with the PU scope. Being spotted sends you back to the last checkpoint instead of ending the game |
 | Shooting range | Free practice with any rifle | Short lane from 100 to 600 m plus a moving target, and a long lane from 800 to 2,500 m |
 
 ### Difficulty (mission)
@@ -137,7 +137,16 @@ A hide that scores 70 or more is good. Press Enter to occupy it.
 
 ### Wind
 
-Wind blows from a base direction and speed, with gusts that vary its direction and speed. Clock values follow sniper practice: wind from 3 or 9 o'clock is full value, from 1–2, 4–5, 7–8 and 10–11 it is half value, and from 12 or 6 it has none. The flag's angle ÷ 4 gives the speed in mph, and smoke leans downwind.
+Wind blows from a base direction and speed, with gusts that vary its direction and speed. Clock values follow the sniper clock method. Only the part of the wind that blows across the bullet's path pushes it sideways, and that part is the wind speed × sin(angle off the line of fire):
+
+| Wind from | Angle off the line | Value | Wind to use |
+|---|---|---|---|
+| 3 or 9 o'clock | 90° | Full | 100% (10 mph → 10 mph) |
+| 2, 4, 8 or 10 o'clock | 60° | Seven-eighths, close to full | ≈ 7/8 (10 mph → 9 mph) |
+| 1, 5, 7 or 11 o'clock | 30° | Half | 50% (10 mph → 5 mph) |
+| 12 or 6 o'clock | 0° | None | 0 (head or tail wind) |
+
+The physics uses the exact crosswind component, so these values match what the bullet does. The part of the wind along the line of fire (head or tail) changes the drop by only a few centimetres at these ranges and is ignored when dialling. The flag's angle ÷ 4 gives the speed in mph, and smoke leans downwind.
 
 ### Firing solution (Recruit, or the range with help on)
 
@@ -190,7 +199,7 @@ All six WW2 rifles can be used in the mission. The five modern rifles are includ
 
 ## 9. Training
 
-### Tutorial (17 steps)
+### Tutorial (18 steps)
 
 The tutorial runs on the mission map, with gold ground markers, a red tag over the current target, an SVG diagram for each step and quizzes with feedback.
 
@@ -204,13 +213,14 @@ The tutorial runs on the mission map, with gold ground markers, a red tag over t
 8. **Range with mils:** a magnified box beside the binocular view brackets the officer against the mil scale ("4.2 mils"), followed by a quiz.
 9. Find the wind (the flag)
 10. Read the wind (quiz)
-11. **Set the elevation drum:** a drum dial walks through ranged → nearest 100 m → drum N, with the presses needed. A trajectory diagram and a red cross in the magnified box show where the round lands with the post on the chest.
-12. **Wind in mils:** a wind-to-mils table for the current range (mph → drift in cm → full-value and half-value mils) with a worked example, followed by a quiz.
-13. **Dial the windage:** the direction (into the wind) and the number of 0.5-mil clicks. The cross slides onto the chest and turns green.
-14. Breathe and fire
-15. Correct and finish
-16. Shoot and move
-17. Training complete
+11. **Full and half value:** a clock diagram splits a wind arrow into its crosswind part (pushes the bullet) and its head/tail part (ignored), for 3, 2, 1 and 12 o'clock. A table gives the value per clock hour, with worked examples (10 mph from 1 o'clock = 5 mph). A quiz asks for the wind to use from a random oblique clock hour and speed.
+12. **Set the elevation drum:** a drum dial walks through ranged → nearest 100 m → drum N, with the presses needed. A trajectory diagram and a red cross in the magnified box show where the round lands with the post on the chest.
+13. **Wind in mils:** a wind-to-mils table for the current range (mph → drift in cm → mils at full, 7/8 and half value) with a worked example, followed by a quiz.
+14. **Dial the windage:** the direction (into the wind) and the number of 0.5-mil clicks. The cross slides onto the chest and turns green.
+15. Breathe and fire
+16. Correct and finish
+17. Shoot and move
+18. Training complete
 
 The tutorial uses a fixed wind of 8 mph from 9 o'clock (full value) on the shot line. The officer stands still at the OP, and the hide's sightline is clear of trees and poles.
 
@@ -246,6 +256,7 @@ The tutorial uses a fixed wind of 8 mph from 9 o'clock (full value) on the shot 
 | v1.3 | 2026-10-25 | Six selectable WW2 rifles with real scopes, reticles, adjustments and ballistics |
 | v1.4 | 2026-10-27 | Modern rifles (SVD, M24, M110, M2010, M107) and the long-range lane from 800 to 2,500 m |
 | v1.5 | 2026-10-28 | Clearer tutorial: magnified mil bracket, predicted-impact cross, drum dial, wind-to-mils table and a new "Wind in mils" step |
+| v1.6 | 2026-10-28 | New tutorial step "Full and half value" with a crosswind diagram and examples. Wind values corrected to the clock method (2/4/8/10 o'clock = 7/8 value, not half) in the HUD, field manual, wind diagram and wind table |
 
 ## 13. Ideas backlog
 
