@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Current build | 1.7 |
+| Current build | 1.8 |
 | Platform | Single HTML page (Three.js r128), desktop browser first, touch supported |
 | Owner | Petr |
 | Last updated | 2026-10-28 |
@@ -37,7 +37,8 @@ Red October factory district, Stalingrad, 12 November 1942, 07:40. You are a sni
 
 | Mode | Purpose | Notes |
 |---|---|---|
-| Mission | The main game | Choose a difficulty and a rifle on the briefing sheet |
+| Campaign | 18 missions based on real WW2 sniper stories, 1939–1945 | See [section 14](#14-campaign-18-missions). Each mission issues the historical rifle and has its own briefing, history, map and sources |
+| Mission | The original Red October mission (campaign mission 7) | Choose a difficulty and any rifle on the briefing sheet |
 | Tutorial | Teaches the full drill in 18 steps | Always issues the Mosin 91/30 with the PU scope. Being spotted sends you back to the last checkpoint instead of ending the game |
 | Shooting range | Free practice with any rifle | Short lane from 100 to 600 m plus a moving target, and a long lane from 800 to 2,500 m |
 
@@ -245,7 +246,7 @@ The tutorial uses a fixed wind of 8 mph from 9 o'clock (full value) on the shot 
 2. **Update this GDD first** and commit it, then change the code and commit that.
 3. Bump the build number in the briefing meta and in the GDD header.
 4. Merge into `main` with `--no-ff`, tag `vMAJOR.MINOR`, and add a line to the version history below.
-5. Update the Mac folder `Documents/AI/SNIPER`, which is the repository root and the only home of the sources. The game is `index.html` only: there are no versioned copies, and every past build is retrieved from its tag (`git show v1.6:index.html`). Republish the artifact. No other files (exports or git bundles) are kept in that folder.
+5. Update the Mac folder `Documents/AI/SNIPER`, which is the repository root and the only home of the sources. The game is `index.html` only: there are no versioned copies, and every past build is retrieved from its tag (`git show v1.6:index.html`). Republish the artifact. The only other files kept there are the briefing maps in `maps/` with their credits (`maps/SOURCES.md`). No exports or git bundles are kept in that folder.
 
 ## 12. Version history
 
@@ -259,10 +260,183 @@ The tutorial uses a fixed wind of 8 mph from 9 o'clock (full value) on the shot 
 | v1.5 | 2026-10-28 | Clearer tutorial: magnified mil bracket, predicted-impact cross, drum dial, wind-to-mils table and a new "Wind in mils" step |
 | v1.6 | 2026-10-28 | New tutorial step "Full and half value" with a crosswind diagram and examples. Wind values corrected to the clock method (2/4/8/10 o'clock = 7/8 value, not half) in the HUD, field manual, wind diagram and wind table |
 | v1.7 | 2026-10-28 | Shooting range card: a toggleable (T) per-rifle table of elevation and windage settings for every target on the lane, with live wind |
+| v1.8 | 2026-10-28 | Campaign of 18 missions from real WW2 sniper stories (1939–1945), each with its own terrain, season, sun, enemy, objective, historical rifle, history, sources and briefing map. New Finnish M/28-30 with iron sights, decoy (G) and sniper duels |
 
 ## 13. Ideas backlog
 
-- Multiple missions and maps (a counter-sniper duel, a night mission).
+- A night mission.
+- Hand-built maps per mission (the campaign reuses one battlefield layout with per-mission terrain, season, buildings and enemies).
 - Spin drift and Coriolis on the long lane.
 - Variable-power scopes with a zoom control.
 - Save the range scores between visits.
+
+## 14. Campaign: 18 missions
+
+The campaign follows real WW2 snipers from the Winter War in December 1939 to Manchuria in August 1945. Every mission is built on a documented person, unit, place and date. Where the record is thin or disputed (the Zaitsev–König duel, Allerberger's memoir, kill tallies), the briefing says so. The player is never told they *are* the historical sniper: they serve in that sniper's unit, on that day, doing the job the record describes.
+
+### How the campaign works
+
+- **Campaign sheet.** The title screen opens the campaign: 18 mission cards in date order, each with its number, title, place, date, army, a tick when won and the best score. All missions can be played in any order; the sheet suggests the next unfinished one.
+- **Mission briefing.** Each briefing has: the order (situation and objective), the date, time, place and unit, the issued rifle, "What really happened" (two to four sentences of history, with any doubts stated), a briefing map (a period map or aerial photo of the real place, when one with a free licence exists, with its caption, author and licence), and the sources.
+- **One battlefield, many places.** The battlefield keeps its proven layout (our trench in the south, a ridge, no-man's-land, the enemy trench, wire, an observation post, an HQ and a tall building for the enemy sniper). Each mission changes everything a player sees and plays against: season and ground colours, snow, sky and fog, sun position (computed for the real date, time and place, then turned so the enemy is at the top of the map), wind, the terrain type (steppe, forest, urban ruins, bocage, polder, mountains, jungle), the buildings and their names, the enemy army and uniforms, the objective, the issued rifle, the spotter's name and the medal table. The mission is chosen with `?m=N` in the page address, so loading a mission rebuilds the whole world.
+- **Rifle.** Each mission issues the historical rifle (or the closest one in the game, stated in the briefing). The original Red October mission keeps the free rifle choice.
+- **Progress** (wins, best score, best medal) is kept in the browser's local storage. Losing it only clears the ticks.
+- **Medals** follow the player's army: Soviet (Medal "For Courage", Order of Glory 3rd class, Order of the Red Star, Order of the Red Banner, Hero of the Soviet Union), Finnish (Medal of Liberty 2nd and 1st class, Cross of Liberty 4th and 3rd class), German (Iron Cross 2nd class, Sniper's Badge in bronze, silver and gold, Iron Cross 1st class), US (Bronze Star, Silver Star, Distinguished Service Cross) and Canadian (Mentioned in Dispatches, Military Medal, Distinguished Conduct Medal).
+
+### Objective types
+
+| Type | Win condition | Used in |
+|---|---|---|
+| Officer | Kill the named officer (the observation-post routine from v1.0), then withdraw to our trench | 1, 7, 12, 14, 15 |
+| Count | Kill a set number of named targets (observers, water carriers, gun crew, tree snipers, MG crew), then withdraw | 2, 3, 5, 6, 9, 10, 11, 13, 16, 17, 18 |
+| Duel | Kill the enemy sniper, who knows you are out there, then withdraw | 4, 8 |
+
+### New mechanics
+
+- **Decoy (G).** In the hide, the spotter raises a helmet on a stick a few metres to the side. An enemy sniper with a line of sight fires at it after a few seconds, showing a muzzle flash and a puff of dust at his position. Two uses per mission. Real basis: Zaitsev's partner Kulikov raised a helmet to draw "König's" shot, and Nomokonov worked helmets on strings to make the enemy fire. Available in missions 4, 8 and 18, and in any mission with an enemy sniper.
+- **Duel sniper.** In a duel the enemy sniper changes position between a few hides chosen for the mission (a ruin, a wreck, a building window). He glints more often when the sun shines into his lens, and he fires at you if your exposure is high and he can see you.
+- **Iron sights.** The Finnish M/28-30 has no scope: view 3 shows the rear notch and front blade at 1× with a narrow field, there is no windage turret (hold off), and there is no lens glint.
+- **Snow.** Snow missions whiten the ground, grass and bushes. A player in white camouflage (Finnish) gets the bush value on snow-covered open ground while prone.
+- **Count targets** move on their own routines: water carriers run side-on to a well at dawn, observers sweep with binoculars, tree snipers sit high in palm trees and glint.
+
+### The missions
+
+| # | Title | Place and date | Player | Objective | Rifle |
+|---|---|---|---|---|---|
+| 1 | White Death | Kollaa front, Ladoga Karelia, Finland · 21 Dec 1939 | Finnish JR 34, 6th Company | Officer | M/28-30, iron sights |
+| 2 | First Blood at Biliaivka | Biliaivka, west of Odessa · 8 Aug 1941 | Soviet 25th "Chapaev" Rifle Division | Count: 2 observers | Mosin PE |
+| 3 | Neva Bank | Nevskaya Dubrovka, Leningrad · 8 Sep 1941 | Soviet 11th Separate Rifle Brigade | Count: 2 advancing riflemen | Mosin PE |
+| 4 | Mackenzie Heights | Sevastopol · Jan 1942 | Soviet 25th Rifle Division | Duel | SVT-40 · PU |
+| 5 | Mamayev Kurgan | Stalingrad · 25 Oct 1942 | Soviet 1047th Rifle Regiment, 284th Rifle Division | Count: artillery observer and signaller | Mosin PE |
+| 6 | Water at Dawn | Ninth January Square, Stalingrad · Oct 1942 | Soviet 13th Guards Rifle Division | Count: 3 water carriers | Mosin PU |
+| 7 | Red October | Red October factory, Stalingrad · 12 Nov 1942 | Soviet 62nd Army | Officer | Free choice |
+| 8 | The Duel | Metiz works, Stalingrad · Nov 1942 | Soviet 284th Rifle Division | Duel ("Major König") | Mosin PE |
+| 9 | Hill 27 | Guadalcanal · 13 Jan 1943 | US 132nd Infantry, Americal Division | Count: 3 tree snipers | M1903A4 |
+| 10 | Velizh Sector | Kalinin Front · Mar 1943 | Soviet 1122nd Rifle Regiment, 334th Rifle Division | Count: 3 of the gun crew and drivers | Mosin PU |
+| 11 | Captured Rifle | Mius front, Donbas · Jul 1943 | German 144th Gebirgsjäger Regiment, 3rd Mountain Division | Count: 2 Soviet machine-gunners | Mosin PU (captured) |
+| 12 | Hedgerows | Hill 192, St-Lô, Normandy · 10 Jul 1944 | US 38th Infantry, 2nd Infantry Division | Officer (artillery observer) | M1903A4 |
+| 13 | Kapellen | Kapellen, north of Antwerp · 6 Oct 1944 | Canadian Calgary Highlanders, scout and sniper platoon | Count: MG gunner and loader | No.4 Mk I (T) |
+| 14 | Border of East Prussia | East Prussian border · Oct 1944 | German 196th Grenadier Regiment, 68th Infantry Division | Officer | Kar98k · ZF39 |
+| 15 | Across the Valley | Eastern Carpathians · Oct 1944 | German 144th Gebirgsjäger Regiment, 3rd Mountain Division | Officer at long range | Kar98k · ZF39 |
+| 16 | Last Winter | Near Ilmsdorf, East Prussia · 26 Jan 1945 | Soviet 184th Rifle Division | Count: 3 (MG crew and an officer) | Mosin PU |
+| 17 | Moltke Bridge | Berlin · 29 Apr 1945 | Soviet 150th Rifle Division, 3rd Shock Army | Count: 3 defenders covering the bridge | Mosin PU |
+| 18 | Taiga Shaman | Foothills of the Greater Khingan, Manchuria · 12 Aug 1945 | Soviet Transbaikal Front | Count: 2 Japanese officers | Mosin PU |
+
+### Mission details
+
+Sun positions were computed for the real place, date and local time, then turned so the enemy is at the top of the map ("game azimuth"). Spotter names are invented unless stated.
+
+**1. White Death.** Kollaa, 21 December 1939, 11:30, −30 °C. Snow forest, a frozen clearing, sun barely 4° above the southern horizon (game azimuth 85°). Enemy: Red Army, 56th Rifle Division. Objective: the Soviet company officer at a forward observation post at the forest edge.
+- *History:* Simo Häyhä, a corporal in the 6th Company of Infantry Regiment 34 under Lt. Aarne Juutilainen, held the Kollaa line through the Winter War. He used a Civil Guard M/28-30 with iron sights, which kept his head low, could not fog in the cold and did not glint. He packed snow in front of his position and kept snow in his mouth so his breath would not show. His best day was 21 December 1939 with 25 kills. Counts range from 219 rifle kills (division commander, February 1940) and 259 (chaplain Rantamaa's diary) to about 500 in his own notes; historian Risto Marjomaa credits "more than two hundred". He was badly wounded on 6 March 1940.
+- *Game:* iron sights, white camouflage, no lens glint, enemy counter-sniper in the trees after the first shot. Spotter: Cpl. Korpela.
+- *Sources:* [Simo Häyhä (Wikipedia)](https://en.wikipedia.org/wiki/Simo_H%C3%A4yh%C3%A4); Tapio Saarelainen, *The White Sniper* (Casemate, 2016).
+
+**2. First Blood at Biliaivka.** 8 August 1941, 07:00. Summer steppe and vineyards, dry grass, morning sun behind you (game azimuth 168°). Enemy: Romanian 4th Army. Objective: two observers on a hill about 400 m away.
+- *History:* Lyudmila Pavlichenko volunteered in Odessa and joined the 25th Rifle Division as a sniper. She dug trenches with only a grenade until a wounded comrade gave her his rifle. Her first two kills were at Biliaivka on 8 August 1941 at about 400 m. In two and a half months at Odessa she was credited with 187 kills; her final tally was 309, including 36 enemy snipers.
+- *Game:* Mosin with the pre-war PE scope. Spotter: Pvt. Bondarenko.
+- *Sources:* [Lyudmila Pavlichenko (Wikipedia)](https://en.wikipedia.org/wiki/Lyudmila_Pavlichenko); [National WWII Museum: "Lady Death" of the Red Army](https://www.nationalww2museum.org/war/articles/lady-death-red-army-lyudmila-pavlichenko); Pavlichenko, *Lady Death* (Greenhill, 2018).
+
+**3. Neva Bank.** Nevskaya Dubrovka, 8 September 1941, 08:00. Late summer birch and pine edge, river meadow, sun to your right (game azimuth 211°). Enemy: German infantry. Objective: the two riflemen of a patrol advancing toward the river.
+- *History:* Vladimir Pchelintsev, a reconnaissance platoon commander in the 11th Separate Rifle Brigade, opened his tally on 8 September 1941 near Nevskaya Dubrovka on the Neva by shooting two advancing German soldiers. He had 102 kills by 6 February 1942, when he was made Hero of the Soviet Union, and he trained snipers before touring the United States with Pavlichenko in 1942. Reliable sources put his total at about 150; his memoir's 456 is considered overstated.
+- *Game:* targets are the patrol pair, who move. Spotter: Pvt. Gusev.
+- *Sources:* [Vladimir Pchelintsev (Wikipedia)](https://en.wikipedia.org/wiki/Vladimir_Pchelintsev).
+
+**4. Mackenzie Heights.** Sevastopol, January 1942, 09:30. Wooded limestone hills, oak scrub, bare winter trees, light frost (game azimuth 102°). Enemy: German 11th Army. Objective: duel with a German sniper who has been killing our runners.
+- *History:* Pavlichenko's division was shipped from Odessa to Sevastopol in October 1941. During the siege she trained snipers and was cited for 257 kills by May 1942. Thirty-six of her 309 kills were enemy snipers. Her sniper partner and husband, Jr. Lt. Alexei Kitsenko, was mortally wounded by a mortar shell in early 1942. Photographs from Sevastopol show her with a scoped SVT-40.
+- *Game:* duel, decoy (G). Spotter: Jr. Lt. Kitsenko.
+- *Sources:* [Lyudmila Pavlichenko (Wikipedia)](https://en.wikipedia.org/wiki/Lyudmila_Pavlichenko); [National Park Service: "Lady Death" and the First Lady](https://www.nps.gov/elro/blogs/lady-death-and-the-first-lady.htm).
+
+**5. Mamayev Kurgan.** Stalingrad, 25 October 1942, 08:00. Shell-torn hill slopes, water towers, ruins of the Metiz works (game azimuth 214°). Enemy: German 6th Army. Objective: the artillery observer and his signaller.
+- *History:* Vasily Zaitsev, a former Pacific Fleet clerk, served in the 1047th Rifle Regiment of the 284th Rifle Division, which crossed into Stalingrad in September 1942. Soviet sources credit him with 225 kills between October and 17 December 1942. With Nikolai Kulikov he developed the "sixes": three pairs of sniper and observer covering a sector. He was wounded in the eyes by a mortar round in January 1943.
+- *Game:* urban hill, many ruins. Spotter: Nikolai Kulikov (historical partner).
+- *Sources:* [Vasily Zaitsev (Wikipedia)](https://en.wikipedia.org/wiki/Vasily_Zaitsev_(sniper)); Vasily Grossman, *A Writer at War* (2005), Stalingrad chapters.
+
+**6. Water at Dawn.** Ninth January Square, Stalingrad, October 1942, 06:40. Blocks of burnt-out flats, Pavlov's House, a well in the square, dawn at your back (game azimuth 194°, elevation 3.5°). Enemy: German infantry. Objective: three men running for water.
+- *History:* Anatoly Chekhov, 19, of the 13th Guards Rifle Division, often fired from the roof of Pavlov's House. Vasily Grossman went out with him and wrote that he shot Germans going out at dawn for water, often running side-on, and never fired with the sun on him so his shadow would not show. He knocked down nine on his first day, 17 in two days and reported 40 in eight days.
+- *Game:* fast side-on targets (lead them). Spotter: Pvt. Ivanov.
+- *Sources:* Grossman, *A Writer at War* ([chapter on Stalingrad snipers](https://erenow.org/ww/awriteratwar/18.php)); [Pavlov's House defenders (stalingrad.net)](https://stalingrad.net/russian-hq/pavlovs-house/defenders.htm).
+
+**7. Red October.** The original mission (sections 2 to 7), now placed in its campaign context: the German attack on the Red October works (Operation Hubertus, 11 November 1942) left both sides dug in among the factory ruins.
+
+**8. The Duel.** Stalingrad, November 1942, 14:00. No-man's-land between a wrecked tank and a pillbox, with a sheet of iron and a pile of bricks. The afternoon sun shines into the enemy's lens (game azimuth 165°). Enemy: a German sniper instructor. Objective: duel.
+- *History:* In Zaitsev's memoir, Moscow sent the head of a Berlin sniper school, "Major König", to kill him. After days of searching, Zaitsev and Kulikov found him under a sheet of iron. Kulikov raised his helmet, the German fired, and Zaitsev shot him when he looked up. No German record of any König or "Heinz Thorvald" exists, and historians treat the duel as a propaganda story built on a smaller real event. The briefing says this.
+- *Game:* duel with decoy (G). The sniper glints when the sun is on his lens. Spotter: Nikolai Kulikov.
+- *Sources:* [Erwin König (Wikipedia)](https://en.wikipedia.org/wiki/Erwin_K%C3%B6nig); [National Interest: "The Greatest Sniper Duel in History Is a Myth"](https://nationalinterest.org/node/33161); Zaitsev, *Notes of a Russian Sniper* (2003).
+
+**9. Hill 27.** Guadalcanal, 13 January 1943, 08:00. Jungle ridge with kunai grass and tall palms, humid haze (game azimuth 230°). Enemy: Imperial Japanese Army. Objective: three snipers tied into palm trees.
+- *History:* John B. George, a rifleman with the 132nd Infantry of the Americal Division, landed on Guadalcanal on 8 December 1942. His battalion flanked the Gifu strongpoint near Mount Austen and took Hill 27 in January 1943. He used a scoped rifle with a spotter on field binoculars, and wrote it all down in *Shots Fired in Anger* (1947). He actually carried a privately bought scoped Winchester; the game issues the M1903A4.
+- *Game:* targets high in palms (aim above the treeline). Spotter: PFC Mazur.
+- *Sources:* [Pacific Wrecks: review of *Shots Fired in Anger*](https://pacificwrecks.com/reviews/shots-fired-in-anger.html); John B. George, *Shots Fired in Anger* (1947, NRA reprint 1981); John Miller Jr., [*Guadalcanal: The First Offensive*](https://history.army.mil/html/books/005/5-3/index.html) (US Army CMH, 1949).
+
+**10. Velizh Sector.** Kalinin Front, March 1943, 09:00. Snow-covered fields and birch woods with a German gun position (game azimuth 227°). Enemy: German infantry and gunners. Objective: three of the gun crew and tractor drivers.
+- *History:* Ivan Sidorenko taught himself sniping as a mortar officer in the Battle of Moscow and became assistant chief of staff of the 1122nd Rifle Regiment, 334th Rifle Division. His Red Star citation of 31 December 1942 credited 129 kills; by 1 May 1943 he had 349. On one sortie he and a trainee destroyed a tank and three tractors with incendiary rounds. He ended the war with about 500 kills and over 250 trained snipers.
+- *Game:* snow, gun position with tractors. Spotter: a trainee, Pvt. Sergeyev.
+- *Sources:* [Ivan Sidorenko (Wikipedia)](https://en.wikipedia.org/wiki/Ivan_Sidorenko).
+
+**11. Captured Rifle.** Mius front, Donbas, July 1943, 07:00. Sunflower fields, balkas (dry ravines), heat haze (game azimuth 351° after turning, so the sun is ahead: glint risk). Player: German Gebirgsjäger. Enemy: Red Army. Objective: two Soviet machine-gunners.
+- *History:* Josef "Sepp" Allerberger came to the Eastern Front with the 144th Gebirgsjäger Regiment in 1943 as a machine-gunner. While recovering from a light wound he tried a captured Mosin 91/30 with a PU scope and made his first sniper kills with it, before formal sniper training. He was credited with 257 kills. His memoir was written by Albrecht Wacker from interviews, and some of its claims (such as a Knight's Cross) are not documented; the briefing says so.
+- *Game:* captured Mosin PU, player side German. Spotter: Gefr. Huber.
+- *Sources:* [Josef Allerberger (Military Wiki)](https://military-history.fandom.com/wiki/Josef_Allerberger); Albrecht Wacker, *Sniper on the Eastern Front* (Pen & Sword, 2005).
+
+**12. Hedgerows.** Hill 192, east of St-Lô, 10 July 1944, 07:30. Bocage: small fields boxed in by earth banks and hedges, sunken lanes, an orchard, a farm and a church tower (game azimuth 248°). Enemy: German 3rd Parachute Division. Objective: the artillery observer on the hill.
+- *History:* Hill 192 gave the Germans a view over all the approaches to St-Lô. The 3rd Parachute Division held it with strongpoints in the hedgerows, which were 1–1.5 m thick and 2–3 m high. The US 2nd Infantry Division took it on 11 July 1944 after a month of stalemate. The player is a sniper of the 38th Infantry the day before the attack; no single named sniper is portrayed.
+- *Game:* hedgerow lines give cover and block sightlines. Spotter: Pvt. Novak.
+- *Sources:* [*St-Lô (7–19 July 1944)*, American Forces in Action (US Army, 1946)](https://ibiblio.org/hyperwar/USA/USA-A-StLo/USA-A-StLo-3.html).
+
+**13. Kapellen.** North of Antwerp, 6 October 1944, 09:00. Flat polder with drainage dykes, poplar rows, brick farms, wet grey sky (game azimuth 111°). Enemy: German infantry. Objective: the MG gunner and loader.
+- *History:* Sgt. Harold Marshall was the sniper of the Calgary Highlanders' scout and sniper platoon. Army photographer Ken Bell photographed him near Fort Brasschaat in September 1944 and in Kapellen on 6 October 1944 with his partner, Cpl. Steven Kormendy, who showed how to use foliage as cover. Marshall's No. 4 Mk I (T) had a scope and a wooden cheek piece. He fought through Normandy and the Scheldt and was wounded on 15 December 1944.
+- *Game:* No.4(T), flat open ground, dykes for cover. Spotter: Cpl. Kormendy (historical partner).
+- *Sources:* [Harold Marshall (Wikipedia)](https://en.wikipedia.org/wiki/Harold_Marshall_(sniper)); [Calgary Highlanders: Scouts & Snipers Platoon](https://calgaryhighlanders.com/about-the-regiment/detailed-history/calgary-highlanders-1939-45/scouts-snipers/).
+
+**14. Border of East Prussia.** October 1944, 09:00. Autumn farmland with a village, beet fields and a wood (game azimuth 41°). Player: German infantry. Enemy: Red Army. Objective: a Soviet battalion officer.
+- *History:* Bruno Sutkus, from a Königsberg suburb, trained at the sniper school in Vilnius in 1943 and served with the 196th Grenadier Regiment, 68th Infantry Division. He was credited with 209 kills, each confirmed by an observer and the battalion commander in his sniper's book. He received the Sniper's Badge in gold on 21 November 1944. After the war he spent over 20 years in Siberia.
+- *Game:* Kar98k with ZF39. Spotter: Gefr. Lange.
+- *Sources:* [Bruno Sutkus (Wikipedia)](https://en.wikipedia.org/wiki/Bruno_Sutkus); Sutkus, *Im Fadenkreuz* (Munin, 2003).
+
+**15. Across the Valley.** Eastern Carpathians, October 1944, 10:00. Mountain valley with spruce forest, rock and early snow on the tops; the officer stands across the valley at 700–1,000 m (game azimuth 53°). Player: German Gebirgsjäger. Enemy: Red Army. Objective: the officer.
+- *History:* Matthäus Hetzenauer of the 144th Gebirgsjäger Regiment, 3rd Mountain Division, trained at the Seetaler Alpe sniper school in 1944 and fought in the Carpathians, Hungary and Slovakia with a Kar98k with a 6× scope and a G43 with a ZF4. He was credited with 345 kills, the most of any German sniper, and his longest reported kill was at about 1,100 m. He was wounded on 6 November 1944 and awarded the Knight's Cross in April 1945.
+- *Game:* the longest shot of the campaign with the ZF39's 800 m drum (hold over beyond it). Spotter: Gefr. Steiner.
+- *Sources:* [Matthäus Hetzenauer (Wikipedia)](https://en.wikipedia.org/wiki/Matth%C3%A4us_Hetzenauer).
+
+**16. Last Winter.** Near Ilmsdorf, East Prussia, 26 January 1945, 10:00. Deep snow, estate buildings, a frozen pond, our self-propelled guns firing often (game azimuth 230°). Enemy: German infantry. Objective: an MG crew and the officer directing them.
+- *History:* Roza Shanina joined the 184th Rifle Division in April 1944 and made her first kill near Vitebsk three days later. She fought at Vilnius and was among the first Soviet troops into East Prussia. She kept a diary from October 1944, was wounded by a sniper in December, and talked her way back to the front in January 1945. She was mortally wounded by a shell fragment on 27 January 1945 near the Reichau estate and died the next day, aged 20, with 59 confirmed kills.
+- *Game:* frequent artillery masking during the assault. Spotter: Sgt. Kalugina (named in tribute; Klavdiya Kalugina served in the same division's sniper platoon).
+- *Sources:* [Roza Shanina (Wikipedia)](https://en.wikipedia.org/wiki/Roza_Shanina).
+
+**17. Moltke Bridge.** Berlin, 29 April 1945, 07:00. Ruined city blocks on the Spree, the half-wrecked bridge, the Ministry of the Interior beyond (game azimuth 270°). Enemy: SS and Volkssturm. Objective: three defenders covering the bridge.
+- *History:* On 28 April 1945 the 3rd Shock Army reached the Moltke Bridge, about 600 m from the Reichstag. The demolition charges only partly destroyed it, and by midnight the 150th and 171st Rifle Divisions held a bridgehead. The player is a sniper covering the assault; no single named sniper is portrayed.
+- *Game:* dense urban cover, short ranges, many targets. Spotter: Sgt. Zagitov (named in tribute to Gazi Zagitov of the 150th Rifle Division, a Reichstag flag-raiser).
+- *Sources:* [Moltke Bridge (Wikipedia)](https://en.wikipedia.org/wiki/Moltke_Bridge); Antony Beevor, *Berlin: The Downfall 1945* (2002).
+
+**18. Taiga Shaman.** Foothills of the Greater Khingan, Manchuria, 12 August 1945, 08:00. Grassy hills, larch woods, summer haze (game azimuth 337°: the morning sun is ahead of you, so watch the glint). Enemy: Japanese Kwantung Army. Objective: two officers.
+- *History:* Semyon Nomokonov, an Evenk hunter from Transbaikalia, served from 1941 to 1945 on five fronts. He marked kills on his pipe, moved in horsehair boots, used mirror fragments and helmets on strings as decoys, and was credited with 367 kills. In August 1945, on the Transbaikal Front in the Khingan foothills, he killed 8 soldiers and officers of the Kwantung Army (some records say 15) and was given a personal rifle, binoculars and a horse.
+- *Game:* decoy (G). Spotter: Pvt. Tsyrenov.
+- *Sources:* [Semyon Nomokonov (Wikipedia)](https://en.wikipedia.org/wiki/Semyon_Nomokonov); [Номоконов, Семён Данилович (Russian Wikipedia)](https://ru.wikipedia.org/wiki/%D0%9D%D0%BE%D0%BC%D0%BE%D0%BA%D0%BE%D0%BD%D0%BE%D0%B2,_%D0%A1%D0%B5%D0%BC%D1%91%D0%BD_%D0%94%D0%B0%D0%BD%D0%B8%D0%BB%D0%BE%D0%B2%D0%B8%D1%87).
+
+### New rifle: Finnish M/28-30
+
+| Rifle · sight | Round · MV | Sight | Elevation · windage | Magazine · group |
+|---|---|---|---|---|
+| M/28-30 "Pystykorva" · iron sights | 7.62×53R D166 heavy ball, 13 g · 730 m/s | Open notch and blade, 1×, 14° view | Rear sight 150–2,000 m (the game uses 100 m steps from 100 m) · none, hold off | 5 · 2 MOA |
+
+## 15. Briefing maps
+
+Maps live in a `maps/` folder next to `index.html` (`maps/m01.jpg` … `maps/m18.jpg`, at most 1,600 px on the long side) with their credits in `maps/SOURCES.md`. Only public-domain or freely licensed images are used (public domain, CC0, CC BY, CC BY-SA), each with its author, licence and source page. A briefing without a map file simply leaves the map out. Because Wikimedia cannot be reached from the cloud build machine, the maps are downloaded on the Mac.
+
+| # | Map wanted |
+|---|---|
+| 1 | Battle of Kollaa or the Ladoga Karelia front, 1939–40 |
+| 2 | Siege of Odessa, 1941 |
+| 3 | Nevsky Pyatachok / Neva crossings, autumn 1941 |
+| 4 | Siege of Sevastopol, 1941–42 |
+| 5, 6, 7, 8 | Stalingrad city fighting, Oct–Nov 1942 (map or Luftwaffe aerial photo: Mamayev Kurgan, central city, Red October, Metiz) |
+| 9 | Guadalcanal, Mount Austen, the Gifu and Hill 27, Jan 1943 (US Army CMH) |
+| 10 | Kalinin Front / Velizh, 1942–43 |
+| 11 | Mius front, July 1943 |
+| 12 | Hill 192, July 1944 (US Army CMH *St-Lô*) |
+| 13 | Battle of the Scheldt, Oct 1944 |
+| 14 | Gumbinnen–Goldap operation, Oct 1944 |
+| 15 | East Carpathian operation, Sep–Oct 1944 |
+| 16 | East Prussian offensive, Jan 1945 |
+| 17 | Battle of Berlin, Reichstag and Moltke Bridge, Apr 1945 |
+| 18 | Soviet invasion of Manchuria, Aug 1945 |
